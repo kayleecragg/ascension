@@ -7,6 +7,7 @@ local TakeDamage = require("effects.takeDamage")
 local Slash      = require("effects.Slash")
 local BaseMeleeUnit = require("enemies.BaseMeleeUnit")
 local ChargeMeleeUnit = require("enemies.ChargeMeleeUnit")
+local RangedUnit = require("enemies.RangedUnit")
 
 local Combat     = {}
 
@@ -73,19 +74,60 @@ end
 function Combat.spawnWave()
     Combat.currentWave = Combat.currentWave + 1
     local count = Combat.waves[Combat.currentWave] or 0
+    
     for i = 1, count do
-        local enemyType = math.random(1, 10)
-        if enemyType <= 8 then
-            local enemy = BaseMeleeUnit:new(math.random(100,700), math.random(100,500), 50, 50,
-                2 + Combat.currentWave*2, 2 + Combat.currentWave*2,
-                80 + Combat.currentWave*20, 120 + Combat.currentWave*20,
-                1, 50, 1.5, 0)
+        local enemyType = math.random(1, 10)  -- Random enemy type
+        
+        if enemyType <= 6 then
+            -- Regular melee unit (60% chance)
+            local enemy = BaseMeleeUnit:new(
+                math.random(100,700),  -- x
+                math.random(100,500),  -- y
+                50,                    -- width
+                50,                    -- height
+                2 + Combat.currentWave*2, -- health
+                2 + Combat.currentWave*2, -- maxHealth
+                80 + Combat.currentWave*20, -- speed
+                120 + Combat.currentWave*20, -- maxSpeed
+                1,                     -- attackDamage
+                50,                    -- attackRange
+                1.5,                   -- attackCD
+                0                      -- attackTimer
+            )
+            table.insert(Combat.enemies, enemy)
+        elseif enemyType <= 8 then
+            -- Charge melee unit (20% chance)
+            local enemy = ChargeMeleeUnit:new(
+                math.random(100,700),  -- x
+                math.random(100,500),  -- y
+                55,                    -- width (slightly bigger)
+                55,                    -- height
+                3 + Combat.currentWave*2, -- health (more health)
+                3 + Combat.currentWave*2, -- maxHealth
+                70 + Combat.currentWave*20, -- speed (slightly slower normally)
+                110 + Combat.currentWave*20, -- maxSpeed
+                1,                     -- attackDamage
+                50,                    -- attackRange
+                2,                     -- attackCD (slower attacks)
+                0                      -- attackTimer
+            )
             table.insert(Combat.enemies, enemy)
         else
-            local enemy = ChargeMeleeUnit:new(math.random(100,700), math.random(100,500), 55, 55,
-                3 + Combat.currentWave*2, 3 + Combat.currentWave*2,
-                70 + Combat.currentWave*20, 110 + Combat.currentWave*20,
-                1, 50, 2, 0)
+            -- Ranged melee unit (20% chance)
+            local enemy = RangedUnit:new(
+                math.random(100,700),  -- x
+                math.random(100,500),  -- y
+                45,                    -- width (slightly smaller)
+                45,                    -- height
+                2 + Combat.currentWave*2, -- health (standard health)
+                2 + Combat.currentWave*2, -- maxHealth
+                90 + Combat.currentWave*20, -- speed (slightly faster)
+                130 + Combat.currentWave*20, -- maxSpeed
+                1,                     -- attackDamage
+                60,                    -- attackRange (slightly longer range)
+                1.8,                   -- attackCD (moderate attacks)
+                0                      -- attackTimer
+            )
             table.insert(Combat.enemies, enemy)
         end
     end
@@ -153,6 +195,74 @@ function Combat.update(dt)
         end
         if not s.active then
             table.remove(BaseMeleeUnit.slashes, i)
+        end
+    end
+
+    for i = #RangedUnit.beams, 1, -1 do
+        local beam = RangedUnit.beams[i]
+        
+        -- Only check active beams that haven't hit the player yet
+        if Combat.player.alive then
+            -- Calculate the closest point on the beam line to the player center
+            local px = Combat.player.x + Combat.player.width/2
+            local py = Combat.player.y + Combat.player.height/2
+            
+            -- Calculate beam end point (back of the beam)
+            local beamEndX = beam.x - beam.dirX * beam.length
+            local beamEndY = beam.y - beam.dirY * beam.length
+            
+            -- Vector from beam start to player
+            local v1x = px - beam.x
+            local v1y = py - beam.y
+            
+            -- Vector from beam start to beam end
+            local v2x = beamEndX - beam.x
+            local v2y = beamEndY - beam.y
+            
+            -- Calculate dot product and projection
+            local dot = v1x * v2x + v1y * v2y
+            local len_sq = v2x * v2x + v2y * v2y
+            local param = -1
+            
+            if len_sq ~= 0 then
+                param = dot / len_sq
+            end
+            
+            local closestX, closestY
+            
+            if param < 0 then
+                closestX = beam.x
+                closestY = beam.y
+            elseif param > 1 then
+                closestX = beamEndX
+                closestY = beamEndY
+            else
+                closestX = beam.x + param * v2x
+                closestY = beam.y + param * v2y
+            end
+            
+            -- Calculate distance from player center to closest point on beam
+            local distX = px - closestX
+            local distY = py - closestY
+            local distance = math.sqrt(distX * distX + distY * distY)
+            
+            -- Check if the player is hit by the beam
+            if distance < Combat.player.width/2 + beam.width/2 then
+                -- Player is hit!
+                Combat.player.health = Combat.player.health - beam.damage
+                
+                -- Visual and sound feedback
+                playSound(assets.sfx.playerHit)
+                TakeDamage.start() 
+                
+                -- Check if player died
+                if Combat.player.health <= 0 then
+                    Combat.playerDead = true
+                    message = "You died!"
+                    messageTimer = MESSAGE_DURATION
+                    assets.music.combatTheme:stop()
+                end
+            end
         end
     end
 

@@ -1,7 +1,6 @@
--- enemies/ChargeMeleeUnit.lua
+-- ChargeMeleeUnit.lua
 local BaseMeleeUnit = require("enemies.BaseMeleeUnit")
 local Slash = require("effects.Slash")
-
 local TakeDamage = require("effects.takeDamage")
 
 local ChargeMeleeUnit = {}
@@ -16,7 +15,7 @@ function ChargeMeleeUnit:new(x, y, width, height, health, maxHealth, speed, maxS
     setmetatable(unit, ChargeMeleeUnit)
     
     -- Add ChargeMeleeUnit specific properties
-    unit.chargeCD = 5       -- Cooldown for charge ability
+    unit.chargeCD = 6       -- Cooldown for charge ability
     unit.chargeTimer = 0    -- Current cooldown timer
     unit.chargeSpeed = unit.maxSpeed * 3  -- Speed while charging (3x normal max speed)
     unit.chargeDamage = unit.attackDamage * 2  -- Damage done by charge
@@ -27,7 +26,6 @@ function ChargeMeleeUnit:new(x, y, width, height, health, maxHealth, speed, maxS
     unit.chargeTargetY = 0  -- Y coordinate target for charge
     unit.chargeDirectionX = 0  -- X direction of charge
     unit.chargeDirectionY = 0  -- Y direction of charge
-    unit.hasHitDuringCharge = false  -- To prevent multiple hits during the same charge
     unit.chargeTrail = {}   -- To create a trail effect during charging
     unit.trailLifetime = 0.4  -- How long trail particles last
     unit.color = {0.8, 0.2, 0.2}  -- Red color for this unit type
@@ -40,7 +38,6 @@ function ChargeMeleeUnit:ability(target)
         -- Reset charge state
         self.isCharging = true
         self.chargeTime = 0
-        self.hasHitDuringCharge = false
         
         -- Calculate direction to player
         local targetX = target.x + target.width/2
@@ -102,7 +99,7 @@ function ChargeMeleeUnit:update(dt, target)
         end
         
         -- Check for collision with player during charge
-        if target and target.alive and not self.hasHitDuringCharge then
+        if target and target.alive then
             local myCenter = {x = self.x + self.width/2, y = self.y + self.height/2}
             local targetCenter = {x = target.x + target.width/2, y = target.y + target.height/2}
             
@@ -114,7 +111,6 @@ function ChargeMeleeUnit:update(dt, target)
                 -- Hit the player!
                 target.health = target.health - self.chargeDamage
                 TakeDamage.start()
-                self.hasHitDuringCharge = true
                 
                 -- Create an impact effect
                 for i = 1, 8 do
@@ -195,6 +191,19 @@ function ChargeMeleeUnit:draw()
             self.width, self.height
         )
         
+        -- Draw health bar
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.rectangle("fill", 
+            self.x, self.y - 8, 
+            self.width, 5
+        )
+        
+        love.graphics.setColor(0, 1, 0)
+        love.graphics.rectangle("fill", 
+            self.x, self.y - 8, 
+            self.width * (self.health / self.maxHealth), 5
+        )
+        
         -- Draw ability cooldown indicator
         if self.chargeTimer > 0 then
             local cdPercent = self.chargeTimer / self.chargeCD
@@ -207,6 +216,9 @@ function ChargeMeleeUnit:draw()
                 -math.pi/2 + (1 - cdPercent) * math.pi * 2
             )
         end
+        
+        -- Reset color
+        love.graphics.setColor(1, 1, 1)
     end
 end
 
