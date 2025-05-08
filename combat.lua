@@ -4,10 +4,9 @@ local assets     = require("assets")
 local util       = require("util")
 local Player     = require("entities.player")
 local TakeDamage = require("effects.takeDamage")
-local Slash  = require("effects.Slash")
+local Slash      = require("effects.Slash")
 local BaseMeleeUnit = require("enemies.BaseMeleeUnit")
 local ChargeMeleeUnit = require("enemies.ChargeMeleeUnit")
-
 
 local Combat     = {}
 
@@ -55,23 +54,16 @@ local function drawAbilityBox(x, y, size, timer, maxCD, label)
 end
 
 function Combat.start()
-    -- Initialize player
     Combat.player = Player.new()
-
-    -- Reset combat state
-    Combat.enemies     = {}
+    Combat.enemies = {}
     Combat.projectiles = {}
-    BaseMeleeUnit.slashes = {} -- Reset slashes
+    BaseMeleeUnit.slashes = {}
     Combat.currentWave = 0
-    Combat.playerDead  = false
-    Combat.combatDone  = false
-    message            = ""
-    messageTimer       = 0
-
-    -- Spawn first wave
+    Combat.playerDead = false
+    Combat.combatDone = false
+    message = ""
+    messageTimer = 0
     Combat.spawnWave()
-
-    -- Play combat music at lower volume
     assets.music.combatTheme:setVolume(0.3)
     if not assets.music.combatTheme:isPlaying() then
         assets.music.combatTheme:play()
@@ -81,43 +73,19 @@ end
 function Combat.spawnWave()
     Combat.currentWave = Combat.currentWave + 1
     local count = Combat.waves[Combat.currentWave] or 0
-    
     for i = 1, count do
-        local enemyType = math.random(1, 10)  -- 20% chance for charge units
-        
+        local enemyType = math.random(1, 10)
         if enemyType <= 8 then
-            -- Regular melee unit
-            local enemy = BaseMeleeUnit:new(
-                math.random(100,700),  -- x
-                math.random(100,500),  -- y
-                50,                    -- width
-                50,                    -- height
-                2 + Combat.currentWave*2, -- health
-                2 + Combat.currentWave*2, -- maxHealth
-                80 + Combat.currentWave*20, -- speed
-                120 + Combat.currentWave*20, -- maxSpeed
-                1,                     -- attackDamage
-                50,                    -- attackRange
-                1.5,                   -- attackCD
-                0                      -- attackTimer
-            )
+            local enemy = BaseMeleeUnit:new(math.random(100,700), math.random(100,500), 50, 50,
+                2 + Combat.currentWave*2, 2 + Combat.currentWave*2,
+                80 + Combat.currentWave*20, 120 + Combat.currentWave*20,
+                1, 50, 1.5, 0)
             table.insert(Combat.enemies, enemy)
         else
-            -- Charge melee unit
-            local enemy = ChargeMeleeUnit:new(
-                math.random(100,700),  -- x
-                math.random(100,500),  -- y
-                55,                    -- width (slightly bigger)
-                55,                    -- height
-                3 + Combat.currentWave*2, -- health (more health)
-                3 + Combat.currentWave*2, -- maxHealth
-                70 + Combat.currentWave*20, -- speed (slightly slower normally)
-                110 + Combat.currentWave*20, -- maxSpeed
-                1,                     -- attackDamage
-                50,                    -- attackRange
-                2,                     -- attackCD (slower attacks)
-                0                      -- attackTimer
-            )
+            local enemy = ChargeMeleeUnit:new(math.random(100,700), math.random(100,500), 55, 55,
+                3 + Combat.currentWave*2, 3 + Combat.currentWave*2,
+                70 + Combat.currentWave*20, 110 + Combat.currentWave*20,
+                1, 50, 2, 0)
             table.insert(Combat.enemies, enemy)
         end
     end
@@ -126,11 +94,8 @@ end
 function Combat.update(dt)
     if Combat.playerDead or Combat.combatDone then return end
     local w,h = love.graphics.getDimensions()
-
-    -- Update damage flash
     TakeDamage.update(dt)
 
-    -- Player movement
     if Combat.player.alive then
         if love.keyboard.isDown("a") then Combat.player.x = Combat.player.x - Combat.player.speed*dt end
         if love.keyboard.isDown("d") then Combat.player.x = Combat.player.x + Combat.player.speed*dt end
@@ -140,59 +105,44 @@ function Combat.update(dt)
         Combat.player.y = util.clamp(Combat.player.y, PADDING, h-Combat.player.height-PADDING)
     end
 
-    -- Cooldowns
     Combat.player.attackTimer   = math.max(0, Combat.player.attackTimer - dt)
     Combat.player.rangedTimer   = math.max(0, Combat.player.rangedTimer - dt)
     Combat.player.teleportTimer = math.max(0, Combat.player.teleportTimer - dt)
 
-    -- Enemy AI & Attacks using BaseMeleeUnit class
     for _, e in ipairs(Combat.enemies) do
         if e.alive and Combat.player.alive then
             e:update(dt, Combat.player)
         end
     end
 
-    -- Update slashes and check for collisions
     for i = #BaseMeleeUnit.slashes, 1, -1 do
         local s = BaseMeleeUnit.slashes[i]
         s:update(dt)
-        
-        -- Apply damage at the right moment if slash hasn't hit yet
         if (s.timer / s.duration) >= s.damageTime then
-            if s.isEnemy then
-                -- Enemy slash hitting player
-                if Combat.player.alive then
-                    -- Calculate distance to player center
-                    local px = Combat.player.x + Combat.player.width/2
-                    local py = Combat.player.y + Combat.player.height/2
-                    local dist = math.sqrt((s.x - px)^2 + (s.y - py)^2)
-                    
-                    -- Check if close enough to hit
-                    if dist < s.width/2 + Combat.player.width/2 then
-                        Combat.player.health = Combat.player.health - s.damage
-                        playSound(assets.sfx.playerHit)
-                        
-                        if Combat.player.health <= 0 then
-                            Combat.playerDead = true
-                            message = "You died!"
-                            messageTimer = MESSAGE_DURATION
-                            assets.music.combatTheme:stop()
-                        end
+            if s.isEnemy and Combat.player.alive then
+                local px = Combat.player.x + Combat.player.width/2
+                local py = Combat.player.y + Combat.player.height/2
+                local dist = math.sqrt((s.x - px)^2 + (s.y - py)^2)
+                if dist < s.width/2 + Combat.player.width/2 then
+                    Combat.player.health = Combat.player.health - s.damage
+                    TakeDamage.start()
+                    playSound(assets.sfx.playerHit)
+                    if Combat.player.health <= 0 then
+                        Combat.playerDead = true
+                        message = "You died!"
+                        messageTimer = MESSAGE_DURATION
+                        assets.music.combatTheme:stop()
                     end
                 end
-            else
-                -- Player slash hitting enemies
+            elseif not s.isEnemy then
                 for _, e in ipairs(Combat.enemies) do
                     if e.alive then
-                        -- Calculate distance to enemy center
                         local ex = e.x + e.width/2
                         local ey = e.y + e.height/2
                         local dist = math.sqrt((s.x - ex)^2 + (s.y - ey)^2)
-                        
                         if dist < s.width/2 + e.width/2 then
                             e:take_damage(s.damage)
                             playSound(assets.sfx.enemyHit)
-                            
                             if not e.alive then
                                 playSound(assets.sfx.enemyDeath)
                             end
@@ -201,23 +151,18 @@ function Combat.update(dt)
                 end
             end
         end
-        
-        -- Remove inactive slashes
         if not s.active then
             table.remove(BaseMeleeUnit.slashes, i)
         end
     end
 
-    -- Projectiles
     for i = #Combat.projectiles,1,-1 do
         local p = Combat.projectiles[i]
         p.x = p.x + p.dx * p.speed * dt
         p.y = p.y + p.dy * p.speed * dt
         local hit = false
         for _, e in ipairs(Combat.enemies) do
-            if e.alive 
-              and p.x > e.x and p.x < e.x + e.width 
-              and p.y > e.y and p.y < e.y + e.height then
+            if e.alive and p.x > e.x and p.x < e.x + e.width and p.y > e.y and p.y < e.y + e.height then
                 e:take_damage(p.damage)
                 playSound(assets.sfx.enemyHit)
                 if not e.alive then
@@ -230,7 +175,6 @@ function Combat.update(dt)
         if hit or p.x<0 or p.x>w or p.y<0 or p.y>h then table.remove(Combat.projectiles,i) end
     end
 
-    -- Wave completion
     local allDead = true
     for _, e in ipairs(Combat.enemies) do if e.alive then allDead=false; break end end
     if allDead then
@@ -238,17 +182,14 @@ function Combat.update(dt)
         else message="Victory!"; messageTimer=MESSAGE_DURATION; Combat.combatDone=true; assets.music.combatTheme:stop() end
     end
 
-    -- Message timer
     if messageTimer>0 then messageTimer=messageTimer-dt; if messageTimer<=0 then message="" end end
 end
 
 function Combat.draw()
     local w,h = love.graphics.getDimensions()
 
-    -- Draw player
     love.graphics.setColor(Combat.player.alive and {1,0,0} or {0.4,0.4,0.4})
     love.graphics.rectangle("fill", Combat.player.x, Combat.player.y, Combat.player.width, Combat.player.height)
-    -- Health bar
     local ratio = util.clamp(Combat.player.health/Combat.player.maxHealth,0,1)
     love.graphics.setColor(0,0,0); love.graphics.rectangle("fill", Combat.player.x, Combat.player.y-8, Combat.player.width,5)
     love.graphics.setColor(0,1,0); love.graphics.rectangle("fill", Combat.player.x, Combat.player.y-8, Combat.player.width*ratio,5)
@@ -256,13 +197,9 @@ function Combat.draw()
     love.graphics.print("HP:"..math.floor(Combat.player.health).."/"..Combat.player.maxHealth, PADDING,10)
     love.graphics.print("Wave:"..Combat.currentWave.."/"..#Combat.waves, PADDING,30)
 
-    -- Draw enemies & their healthbars
     for _, e in ipairs(Combat.enemies) do
         if e.alive then
-            -- Draw the enemy using its own draw method
             e:draw()
-            
-            -- Draw health bar (since health bars are consistent across all enemy types)
             local eRatio = util.clamp(e.health/e.maxHealth, 0, 1)
             love.graphics.setColor(0,0,0)
             love.graphics.rectangle("fill", e.x, e.y-8, e.width, 5)
@@ -270,63 +207,56 @@ function Combat.draw()
             love.graphics.rectangle("fill", e.x, e.y-8, e.width*eRatio, 5)
         end
     end
-    
-    -- Draw slashes
+
     for _, s in ipairs(BaseMeleeUnit.slashes) do
         s:draw()
     end
 
-    -- Draw projectiles
     for _, p in ipairs(Combat.projectiles) do
         love.graphics.setColor(0.75,0.75,0.75)
         love.graphics.circle("fill", p.x, p.y, 5)
     end
 
-    -- Ability HUD
     local bs,by=48,h-48-PADDING
-drawAbilityBox(PADDING,      by,bs,Combat.player.teleportTimer,Combat.player.teleportCD,"SPACE")
-drawAbilityBox(PADDING+bs+PADDING,by,bs,Combat.player.rangedTimer,Combat.player.rangedCD,"RMB")
+    drawAbilityBox(PADDING,      by,bs,Combat.player.teleportTimer,Combat.player.teleportCD,"SPACE")
+    drawAbilityBox(PADDING+bs+PADDING,by,bs,Combat.player.rangedTimer,Combat.player.rangedCD,"RMB")
 
-    -- Damage flash overlay
     TakeDamage.draw(w,h)
 
-    -- Event message
     if message~="" then love.graphics.setColor(1,1,1); love.graphics.printf(message,0,h-30,w,"center") end
 end
 
 function Combat.keypressed(key)
     if key=="space" and Combat.player.alive then
-        if Combat.player.teleportTimer>0 then playSound(assets.sfx.abilityCooldown); message="Ability on cooldown!"; messageTimer=MESSAGE_DURATION; return end
-        local mx,my=love.mouse.getPosition(); local w,h=love.graphics.getDimensions()
+        if Combat.player.teleportTimer>0 then
+            playSound(assets.sfx.abilityCooldown)
+            message="Ability on cooldown!"
+            messageTimer=MESSAGE_DURATION
+            return
+        end
+        local mx,my=love.mouse.getPosition()
+        local w,h=love.graphics.getDimensions()
         Combat.player.x=util.clamp(mx-Combat.player.width/2,PADDING,w-Combat.player.width-PADDING)
         Combat.player.y=util.clamp(my-Combat.player.height/2,PADDING,h-Combat.player.height-PADDING)
         Combat.player.teleportTimer=Combat.player.teleportCD
-        playSound(assets.sfx.teleport); message="Teleported!"; messageTimer=MESSAGE_DURATION
+        playSound(assets.sfx.teleport)
+        message="Teleported!"
+        messageTimer=MESSAGE_DURATION
     end
 end
 
 function Combat.mousepressed(x, y, button)
     local px = Combat.player.x + Combat.player.width/2
     local py = Combat.player.y + Combat.player.height/2
-
     if button == 1 and Combat.player.attackTimer <= 0 and Combat.player.alive then
-        -- Create player slash toward mouse position
-        local slash = Slash:new(
-            px, py, x, y, 
-            Combat.player.attackDamage, 
-            0.4, 
-            Combat.player.attackRange
-        )
-        slash.isEnemy = false  -- This is a player slash
+        local slash = Slash:new(px, py, x, y, Combat.player.attackDamage, 0.4, Combat.player.attackRange)
+        slash.isEnemy = false
         table.insert(BaseMeleeUnit.slashes, slash)
-        
         Combat.player.attackTimer = Combat.player.attackCD
         playSound(assets.sfx.playerMelee)
         message = "Melee Attack!"
         messageTimer = MESSAGE_DURATION
-
     elseif button == 2 and Combat.player.alive then
-        -- Ranged
         if Combat.player.rangedTimer > 0 then
             playSound(assets.sfx.abilityCooldown)
             message = "Ability on cooldown!"
@@ -345,12 +275,10 @@ function Combat.mousepressed(x, y, button)
             })
         end
         Combat.player.rangedTimer = Combat.player.rangedCD
-
         if assets.sfx.playerRanged then
             local s = assets.sfx.playerRanged:clone()
             s:play()
         end
-
         message = "Ranged Attack!"
         messageTimer = MESSAGE_DURATION
     end
