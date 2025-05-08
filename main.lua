@@ -3,6 +3,7 @@ local dialogue = require("dialogue")
 local combat   = require("combat")
 local debate   = require("debate")
 local util     = require("util")
+local settings = require("settings")
 
 local currentState = "intro"
 
@@ -16,6 +17,7 @@ package.path = package.path .. ";"
 
 function love.load()
     love.graphics.setFont(assets.dialogueFont)
+    settings.apply()
     dialogue.start(dialogue.introLines)
 end
 
@@ -50,10 +52,27 @@ function love.draw()
     elseif currentState == "victory" then
         love.graphics.setFont(assets.bigFont)
         love.graphics.printf("VICTORY!", 0, love.graphics.getHeight()/2, love.graphics.getWidth(), "center")
+    elseif currentState == "settings" then
+        settings.draw()
+    end
     end
 end
 
 function love.keypressed(key)
+    if key == "escape" then
+        if currentState == "settings" then
+            currentState = previousState or "intro"
+        else
+            previousState = currentState
+            currentState = "settings"
+        end
+        return
+    end
+
+    if currentState == "settings" then
+        settings.keypressed(key)
+        return
+    end
     if currentState == "intro" or currentState == "mid" then
         if key == "space" then
             local done = dialogue.nextLine()
