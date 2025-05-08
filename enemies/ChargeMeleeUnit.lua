@@ -1,0 +1,210 @@
+-- enemies/ChargeMeleeUnit.lua
+local BaseMeleeUnit = require("enemies.BaseMeleeUnit")
+local Slash = require("effects.Slash")
+
+local ChargeMeleeUnit = {}
+ChargeMeleeUnit.__index = ChargeMeleeUnit
+setmetatable(ChargeMeleeUnit, {__index = BaseMeleeUnit})  -- This sets up inheritance
+
+function ChargeMeleeUnit:new(x, y, width, height, health, maxHealth, speed, maxSpeed, attackDamage, attackRange, attackCD, attackTimer)
+    -- Call the parent constructor
+    local unit = BaseMeleeUnit:new(x, y, width, height, health, maxHealth, speed, maxSpeed, attackDamage, attackRange, attackCD, attackTimer)
+    
+    -- Change the metatable to ChargeMeleeUnit
+    setmetatable(unit, ChargeMeleeUnit)
+    
+    -- Add ChargeMeleeUnit specific properties
+    unit.chargeCD = 5       -- Cooldown for charge ability
+    unit.chargeTimer = 0    -- Current cooldown timer
+    unit.chargeSpeed = unit.maxSpeed * 3  -- Speed while charging (3x normal max speed)
+    unit.chargeDamage = unit.attackDamage * 2  -- Damage done by charge
+    unit.isCharging = false  -- Whether currently in charging state
+    unit.chargeDuration = 0.8  -- How long the charge lasts
+    unit.chargeTime = 0     -- Current charge timer
+    unit.chargeTargetX = 0  -- X coordinate target for charge
+    unit.chargeTargetY = 0  -- Y coordinate target for charge
+    unit.chargeDirectionX = 0  -- X direction of charge
+    unit.chargeDirectionY = 0  -- Y direction of charge
+    unit.hasHitDuringCharge = false  -- To prevent multiple hits during the same charge
+    unit.chargeTrail = {}   -- To create a trail effect during charging
+    unit.trailLifetime = 0.4  -- How long trail particles last
+    unit.color = {0.8, 0.2, 0.2}  -- Red color for this unit type
+    
+    return unit
+end
+
+function ChargeMeleeUnit:ability(target)
+    if self.chargeTimer <= 0 and not self.isCharging and self.alive then
+        -- Reset charge state
+        self.isCharging = true
+        self.chargeTime = 0
+        self.hasHitDuringCharge = false
+        
+        -- Calculate direction to player
+        local targetX = target.x + target.width/2
+        local targetY = target.y + target.height/2
+        local startX = self.x + self.width/2
+        local startY = self.y + self.height/2
+        
+        -- Store the target position at the start of charge
+        self.chargeTargetX = targetX
+        self.chargeTargetY = targetY
+        
+        -- Calculate direction
+        local dx = targetX - startX
+        local dy = targetY - startY
+        local length = math.sqrt(dx * dx + dy * dy)
+        
+        if length > 0 then
+            self.chargeDirectionX = dx / length
+            self.chargeDirectionY = dy / length
+        else
+            self.chargeDirectionX = 1  -- Default to right if somehow on top of target
+            self.chargeDirectionY = 0
+        end
+        
+        -- Clear existing trail
+        self.chargeTrail = {}
+        
+        return true
+    end
+    
+    return false
+end
+
+function ChargeMeleeUnit:update(dt, target)
+    -- Update charge cooldown
+    self.chargeTimer = math.max(0, self.chargeTimer - dt)
+    
+    if self.isCharging then
+        -- Update charge timer
+        self.chargeTime = self.chargeTime + dt
+        
+        -- Move in charging direction
+        local moveX = self.chargeDirectionX * self.chargeSpeed * dt
+        local moveY = self.chargeDirectionY * self.chargeSpeed * dt
+        
+        self.x = self.x + moveX
+        self.y = self.y + moveY
+        
+        -- Add trail particles
+        if math.random() < 0.3 then  -- Only add some particles for performance
+            table.insert(self.chargeTrail, {
+                x = self.x + self.width/2 - self.chargeDirectionX * self.width/2,
+                y = self.y + self.height/2 - self.chargeDirectionY * self.height/2,
+                lifetime = self.trailLifetime,
+                timer = 0,
+                size = self.width * 0.4,
+                color = {self.color[1], self.color[2], self.color[3], 0.7}
+            })
+        end
+        
+        -- Check for collision with player during charge
+        if target and target.alive and not self.hasHitDuringCharge then
+            local myCenter = {x = self.x + self.width/2, y = self.y + self.height/2}
+            local targetCenter = {x = target.x + target.width/2, y = target.y + target.height/2}
+            
+            local dx = myCenter.x - targetCenter.x
+            local dy = myCenter.y - targetCenter.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            
+            if dist < (self.width + target.width) / 2 then
+                -- Hit the player!
+                target.health = target.health - self.chargeDamage
+                self.hasHitDuringCharge = true
+                
+                -- Create an impact effect
+                for i = 1, 8 do
+                    local angle = math.random() * math.pi * 2
+                    local speed = math.random(50, 200)
+                    table.insert(self.chargeTrail, {
+                        x = myCenter.x,
+                        y = myCenter.y,
+                        dx = math.cos(angle) * speed,
+                        dy = math.sin(angle) * speed,
+                        lifetime = self.trailLifetime * 1.5,
+                        timer = 0,
+                        size = self.width * 0.3,
+                        color = {1, 0.2, 0.1, 0.9}
+                    })
+                end
+            end
+        end
+        
+        -- End charge after duration expires
+        if self.chargeTime >= self.chargeDuration then
+            self.isCharging = false
+            self.chargeTimer = self.chargeCD  -- Start cooldown
+        end
+        
+        -- Update trail particles
+        for i = #self.chargeTrail, 1, -1 do
+            local p = self.chargeTrail[i]
+            p.timer = p.timer + dt
+            
+            -- Move particles that have momentum
+            if p.dx and p.dy then
+                p.x = p.x + p.dx * dt
+                p.y = p.y + p.dy * dt
+                
+                -- Slow down particles
+                p.dx = p.dx * 0.95
+                p.dy = p.dy * 0.95
+            end
+            
+            -- Fade out
+            p.color[4] = 0.9 * (1 - (p.timer / p.lifetime))
+            
+            -- Remove expired particles
+            if p.timer >= p.lifetime then
+                table.remove(self.chargeTrail, i)
+            end
+        end
+    else
+        -- Not charging, use normal AI
+        if math.random() < 0.01 and target then  -- Small chance to use charge ability
+            self:ability(target)
+        else
+            -- Call the parent's update method for normal behavior
+            BaseMeleeUnit.update(self, dt, target)
+        end
+    end
+end
+
+function ChargeMeleeUnit:draw()
+    -- Draw charge trail
+    for _, p in ipairs(self.chargeTrail) do
+        love.graphics.setColor(p.color)
+        love.graphics.circle("fill", p.x, p.y, p.size * (1 - (p.timer / p.lifetime)))
+    end
+    
+    -- Draw the unit with appropriate color
+    if self.alive then
+        if self.isCharging then
+            -- Brighter color during charge
+            love.graphics.setColor(1, 0.3, 0.3)
+        else
+            love.graphics.setColor(self.color)
+        end
+        
+        love.graphics.rectangle("fill", 
+            self.x, self.y, 
+            self.width, self.height
+        )
+        
+        -- Draw ability cooldown indicator
+        if self.chargeTimer > 0 then
+            local cdPercent = self.chargeTimer / self.chargeCD
+            love.graphics.setColor(0.2, 0.2, 0.8, 0.7)
+            love.graphics.arc("fill", 
+                self.x + self.width/2, 
+                self.y + self.height/2, 
+                self.width * 0.6, 
+                -math.pi/2, 
+                -math.pi/2 + (1 - cdPercent) * math.pi * 2
+            )
+        end
+    end
+end
+
+return ChargeMeleeUnit

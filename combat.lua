@@ -6,6 +6,8 @@ local Player     = require("entities.player")
 local TakeDamage = require("effects.takeDamage")
 local Slash  = require("effects.Slash")
 local BaseMeleeUnit = require("enemies.BaseMeleeUnit")
+local ChargeMeleeUnit = require("enemies.ChargeMeleeUnit")
+
 
 local Combat     = {}
 
@@ -20,7 +22,7 @@ local messageTimer = 0
 Combat.player      = {}
 Combat.enemies     = {}
 Combat.projectiles = {}
-Combat.waves       = {1,2,3,4,5,5}
+Combat.waves       = {2,4,6,8,10,11}
 Combat.currentWave = 0
 Combat.playerDead  = false
 Combat.combatDone  = false
@@ -79,23 +81,45 @@ end
 function Combat.spawnWave()
     Combat.currentWave = Combat.currentWave + 1
     local count = Combat.waves[Combat.currentWave] or 0
+    
     for i = 1, count do
-        -- Create enemies as BaseMeleeUnit instances
-        local enemy = BaseMeleeUnit:new(
-            math.random(100,700),  -- x
-            math.random(100,500),  -- y
-            50,                    -- width
-            50,                    -- height
-            2 + Combat.currentWave*2, -- health
-            2 + Combat.currentWave*2, -- maxHealth
-            80 + Combat.currentWave*20, -- speed
-            120 + Combat.currentWave*20, -- maxSpeed
-            1,                     -- attackDamage
-            50,                    -- attackRange
-            1.5,                   -- attackCD
-            0                      -- attackTimer
-        )
-        table.insert(Combat.enemies, enemy)
+        local enemyType = math.random(1, 10)  -- 20% chance for charge units
+        
+        if enemyType <= 8 then
+            -- Regular melee unit
+            local enemy = BaseMeleeUnit:new(
+                math.random(100,700),  -- x
+                math.random(100,500),  -- y
+                50,                    -- width
+                50,                    -- height
+                2 + Combat.currentWave*2, -- health
+                2 + Combat.currentWave*2, -- maxHealth
+                80 + Combat.currentWave*20, -- speed
+                120 + Combat.currentWave*20, -- maxSpeed
+                1,                     -- attackDamage
+                50,                    -- attackRange
+                1.5,                   -- attackCD
+                0                      -- attackTimer
+            )
+            table.insert(Combat.enemies, enemy)
+        else
+            -- Charge melee unit
+            local enemy = ChargeMeleeUnit:new(
+                math.random(100,700),  -- x
+                math.random(100,500),  -- y
+                55,                    -- width (slightly bigger)
+                55,                    -- height
+                3 + Combat.currentWave*2, -- health (more health)
+                3 + Combat.currentWave*2, -- maxHealth
+                70 + Combat.currentWave*20, -- speed (slightly slower normally)
+                110 + Combat.currentWave*20, -- maxSpeed
+                1,                     -- attackDamage
+                50,                    -- attackRange
+                2,                     -- attackCD (slower attacks)
+                0                      -- attackTimer
+            )
+            table.insert(Combat.enemies, enemy)
+        end
     end
 end
 
@@ -229,16 +253,21 @@ function Combat.draw()
     love.graphics.setColor(0,0,0); love.graphics.rectangle("fill", Combat.player.x, Combat.player.y-8, Combat.player.width,5)
     love.graphics.setColor(0,1,0); love.graphics.rectangle("fill", Combat.player.x, Combat.player.y-8, Combat.player.width*ratio,5)
     love.graphics.setColor(1,1,1)
-    love.graphics.print("HP:"..Combat.player.health.."/"..Combat.player.maxHealth, PADDING,10)
+    love.graphics.print("HP:"..math.floor(Combat.player.health).."/"..Combat.player.maxHealth, PADDING,10)
     love.graphics.print("Wave:"..Combat.currentWave.."/"..#Combat.waves, PADDING,30)
 
-    -- Draw enemies & their bars
+    -- Draw enemies & their healthbars
     for _, e in ipairs(Combat.enemies) do
         if e.alive then
-            love.graphics.setColor(1,1,0); love.graphics.rectangle("fill", e.x,e.y,e.width,e.height)
-            local eRatio=util.clamp(e.health/e.maxHealth,0,1)
-            love.graphics.setColor(0,0,0); love.graphics.rectangle("fill", e.x,e.y-8,e.width,5)
-            love.graphics.setColor(0,1,0); love.graphics.rectangle("fill", e.x,e.y-8,e.width*eRatio,5)
+            -- Draw the enemy using its own draw method
+            e:draw()
+            
+            -- Draw health bar (since health bars are consistent across all enemy types)
+            local eRatio = util.clamp(e.health/e.maxHealth, 0, 1)
+            love.graphics.setColor(0,0,0)
+            love.graphics.rectangle("fill", e.x, e.y-8, e.width, 5)
+            love.graphics.setColor(0,1,0)
+            love.graphics.rectangle("fill", e.x, e.y-8, e.width*eRatio, 5)
         end
     end
     

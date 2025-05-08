@@ -91,4 +91,15 @@ function BaseMeleeUnit:update(dt, target)
     end
 end
 
+function BaseMeleeUnit:draw()
+    -- Draw the unit
+    if self.alive then
+        love.graphics.setColor(1, 1, 0)  -- Yellow for base melee units
+        love.graphics.rectangle("fill", 
+            self.x, self.y, 
+            self.width, self.height
+        )
+    end
+end
+
 return BaseMeleeUnit
