@@ -6,6 +6,14 @@ local util     = require("util")
 
 local currentState = "intro"
 
+local scriptPath = debug.getinfo(1).source:match("@?(.*/)") or "./"
+
+package.path = package.path .. ";" 
+             .. scriptPath .. "?.lua" .. ";"          -- Current directory
+             .. scriptPath .. "enemies/?.lua" .. ";"  -- enemies directory
+             .. scriptPath .. "effects/?.lua" .. ";"    -- effects directory 
+
+
 function love.load()
     love.graphics.setFont(assets.dialogueFont)
     dialogue.start(dialogue.introLines)
