@@ -2,6 +2,8 @@
 local BaseMeleeUnit = require("enemies.BaseMeleeUnit")
 local Slash = require("effects.Slash")
 
+local TakeDamage = require("effects.takeDamage")
+
 local ChargeMeleeUnit = {}
 ChargeMeleeUnit.__index = ChargeMeleeUnit
 setmetatable(ChargeMeleeUnit, {__index = BaseMeleeUnit})  -- This sets up inheritance
@@ -111,6 +113,7 @@ function ChargeMeleeUnit:update(dt, target)
             if dist < (self.width + target.width) / 2 then
                 -- Hit the player!
                 target.health = target.health - self.chargeDamage
+                TakeDamage.start()
                 self.hasHitDuringCharge = true
                 
                 -- Create an impact effect
