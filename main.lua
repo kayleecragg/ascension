@@ -55,8 +55,8 @@ function love.draw()
     elseif currentState == "settings" then
         settings.draw()
     end
-    end
 end
+
 
 function love.keypressed(key)
     if key == "escape" then
