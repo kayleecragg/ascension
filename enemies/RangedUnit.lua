@@ -17,14 +17,14 @@ function RangedUnit:new(x, y, width, height, health, maxHealth, speed, maxSpeed,
     setmetatable(unit, RangedUnit)
     
     -- Add RangedUnit specific properties
-    unit.beamCD = 5        -- Cooldown for beam ability (longer than charge)
+    unit.beamCD = 3        -- Cooldown for beam ability (longer than charge)
     unit.beamTimer = 0     -- Current cooldown timer
-    unit.beamDamage = unit.attackDamage * 3  -- Damage done by beam
-    unit.beamSpeed = 600   -- Speed of the beam projectile
+    unit.beamDamage = unit.attackDamage * 2  -- Damage done by beam
+    unit.beamSpeed = 900   -- Speed of the beam projectile
     unit.beamWidth = 30    -- Width of the beam
     unit.beamLength = 80   -- Length of the beam
     unit.castingBeam = false  -- Whether currently casting a beam
-    unit.castTime = 1.0    -- Time to cast beam
+    unit.castTime = 0.8    -- Time to cast beam
     unit.castTimer = 0     -- Current cast timer
     unit.beamDirection = {x = 0, y = 0}  -- Direction of the beam
     unit.color = {0.2, 0.4, 0.8}  -- Blue color for this unit type
@@ -250,16 +250,16 @@ function RangedUnit:draw()
             )
         end
         
-        -- Draw aiming direction during casting
-        if self.castingBeam then
-            love.graphics.setColor(0.4, 0.7, 1, 0.5)
-            love.graphics.line(
-                self.x + self.width/2,
-                self.y + self.height/2,
-                self.x + self.width/2 + self.beamDirection.x * 200,
-                self.y + self.height/2 + self.beamDirection.y * 200
-            )
-        end
+        -- -- Draw aiming direction during casting
+        -- if self.castingBeam then
+        --     love.graphics.setColor(0.4, 0.7, 1, 0.5)
+        --     love.graphics.line(
+        --         self.x + self.width/2,
+        --         self.y + self.height/2,
+        --         self.x + self.width/2 + self.beamDirection.x * 200,
+        --         self.y + self.height/2 + self.beamDirection.y * 200
+        --     )
+        -- end
     end
     
     -- Reset color

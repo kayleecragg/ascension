@@ -8,7 +8,7 @@ function Player.new()
         health = 100,
         maxHealth = 100,
         alive = true,
-        attackDamage = 50,
+        attackDamage = 5,
         attackRange = 120,
         attackCD = 1,
         attackTimer = 0,

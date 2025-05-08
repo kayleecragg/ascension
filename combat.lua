@@ -104,7 +104,7 @@ function Combat.spawnWave()
                 55,                    -- height
                 3 + Combat.currentWave*2, -- health (more health)
                 3 + Combat.currentWave*2, -- maxHealth
-                70 + Combat.currentWave*20, -- speed (slightly slower normally)
+                75 + Combat.currentWave*20, -- speed (slightly slower normally)
                 110 + Combat.currentWave*20, -- maxSpeed
                 1,                     -- attackDamage
                 50,                    -- attackRange
@@ -121,11 +121,11 @@ function Combat.spawnWave()
                 45,                    -- height
                 2 + Combat.currentWave*2, -- health (standard health)
                 2 + Combat.currentWave*2, -- maxHealth
-                90 + Combat.currentWave*20, -- speed (slightly faster)
+                45 + Combat.currentWave*20, -- speed (slightly slower)
                 130 + Combat.currentWave*20, -- maxSpeed
                 1,                     -- attackDamage
                 60,                    -- attackRange (slightly longer range)
-                1.8,                   -- attackCD (moderate attacks)
+                999,                   -- can't attack normally
                 0                      -- attackTimer
             )
             table.insert(Combat.enemies, enemy)
@@ -298,7 +298,7 @@ end
 function Combat.draw()
     local w,h = love.graphics.getDimensions()
 
-    love.graphics.setColor(Combat.player.alive and {1,0,0} or {0.4,0.4,0.4})
+    love.graphics.setColor(Combat.player.alive and {0,1,0} or {0.4,0.4,0.4})
     love.graphics.rectangle("fill", Combat.player.x, Combat.player.y, Combat.player.width, Combat.player.height)
     local ratio = util.clamp(Combat.player.health/Combat.player.maxHealth,0,1)
     love.graphics.setColor(0,0,0); love.graphics.rectangle("fill", Combat.player.x, Combat.player.y-8, Combat.player.width,5)

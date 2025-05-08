@@ -15,10 +15,10 @@ function ChargeMeleeUnit:new(x, y, width, height, health, maxHealth, speed, maxS
     setmetatable(unit, ChargeMeleeUnit)
     
     -- Add ChargeMeleeUnit specific properties
-    unit.chargeCD = 6       -- Cooldown for charge ability
+    unit.chargeCD = 5       -- Cooldown for charge ability
     unit.chargeTimer = 0    -- Current cooldown timer
-    unit.chargeSpeed = unit.maxSpeed * 3  -- Speed while charging (3x normal max speed)
-    unit.chargeDamage = unit.attackDamage * 2  -- Damage done by charge
+    unit.chargeSpeed = unit.maxSpeed * 5  -- Speed while charging (5x normal max speed)
+    unit.chargeDamage = unit.attackDamage * 1.2  -- Damage done by charge
     unit.isCharging = false  -- Whether currently in charging state
     unit.chargeDuration = 0.8  -- How long the charge lasts
     unit.chargeTime = 0     -- Current charge timer
