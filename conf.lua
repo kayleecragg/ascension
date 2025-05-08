@@ -1,5 +1,5 @@
 function love.conf(t)
-    t.window.title = "Your Game Title"
+    t.window.title = "Ascension"
     t.window.resizable = true
     t.window.fullscreen = false -- You can set this to true to start in fullscreen
     t.window.fullscreentype = "desktop"

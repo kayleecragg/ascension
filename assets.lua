@@ -27,5 +27,20 @@ assets.nothing           = love.graphics.newImage("resources/images/nothing.png"
 assets.mysteryman        = love.graphics.newImage("resources/images/mysteryman.png")
 assets.mysterywoman        = love.graphics.newImage("resources/images/mysterywoman.png")
 
+-- Sound effects
+assets.sfx = {}
+assets.sfx.playerMelee     = love.audio.newSource("resources/audio/playerRanged.mp3", "static")
+assets.sfx.playerRanged    = love.audio.newSource("resources/audio/playerRanged.mp3", "static")
+assets.sfx.teleport        = love.audio.newSource("resources/audio/teleport.mp3", "static")
+assets.sfx.playerHit       = love.audio.newSource("resources/audio/playerHit.mp3", "static")
+assets.sfx.enemyHit        = love.audio.newSource("resources/audio/playerHit.mp3", "static")
+assets.sfx.enemyDeath      = love.audio.newSource("resources/audio/playerHit.mp3", "static")
+assets.sfx.enemyAttack     = love.audio.newSource("resources/audio/playerHit.mp3", "static")
+assets.sfx.abilityCooldown = love.audio.newSource("resources/audio/cooldown_blocked.mp3", "static")
+
+-- Music
+assets.music = {}
+assets.music.combatTheme = love.audio.newSource("resources/audio/combat_theme.mp3", "stream")
+assets.music.combatTheme:setLooping(true)
 
 return assets
