@@ -134,7 +134,7 @@ function Combat.update(dt)
         s:update(dt)
         
         -- Apply damage at the right moment if slash hasn't hit yet
-        if not s.hasHit and (s.timer / s.duration) >= s.damageTime then
+        if (s.timer / s.duration) >= s.damageTime then
             if s.isEnemy then
                 -- Enemy slash hitting player
                 if Combat.player.alive then
@@ -147,7 +147,6 @@ function Combat.update(dt)
                     if dist < s.width/2 + Combat.player.width/2 then
                         Combat.player.health = Combat.player.health - s.damage
                         playSound(assets.sfx.playerHit)
-                        s.hasHit = true
                         
                         if Combat.player.health <= 0 then
                             Combat.playerDead = true
@@ -169,12 +168,10 @@ function Combat.update(dt)
                         if dist < s.width/2 + e.width/2 then
                             e:take_damage(s.damage)
                             playSound(assets.sfx.enemyHit)
-                            s.hasHit = true
                             
                             if not e.alive then
                                 playSound(assets.sfx.enemyDeath)
                             end
-                            break
                         end
                     end
                 end

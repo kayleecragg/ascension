@@ -24,11 +24,10 @@ function Slash:new(startX, startY, targetX, targetY, damage, duration, attackRan
     -- Properties
     slash.width = attackRange * 0.8 or 30
     slash.height = attackRange * 0.4 or 15
-    slash.damage = damage or 1
+    slash.damage = damage / 60 or 1
     slash.duration = duration or 0.4
     slash.timer = 0
     slash.active = true
-    slash.hasHit = false
     slash.isEnemy = false
     
     -- Animation properties
