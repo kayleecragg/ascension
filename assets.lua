@@ -29,13 +29,13 @@ assets.mysterywoman        = love.graphics.newImage("resources/images/mysterywom
 
 -- Sound effects
 assets.sfx = {}
-assets.sfx.playerMelee     = love.audio.newSource("resources/audio/playerRanged.mp3", "static")
+assets.sfx.playerMelee     = love.audio.newSource("resources/audio/playerMelee.mp3", "static")
 assets.sfx.playerRanged    = love.audio.newSource("resources/audio/playerRanged.mp3", "static")
 assets.sfx.teleport        = love.audio.newSource("resources/audio/teleport.mp3", "static")
 assets.sfx.playerHit       = love.audio.newSource("resources/audio/playerHit.mp3", "static")
 assets.sfx.enemyHit        = love.audio.newSource("resources/audio/playerHit.mp3", "static")
-assets.sfx.enemyDeath      = love.audio.newSource("resources/audio/playerHit.mp3", "static")
-assets.sfx.enemyAttack     = love.audio.newSource("resources/audio/playerHit.mp3", "static")
+assets.sfx.enemyDeath      = love.audio.newSource("resources/audio/enemyDeath.mp3", "static")
+assets.sfx.enemyAttack     = love.audio.newSource("resources/audio/enemyAttack.mp3", "static")
 assets.sfx.abilityCooldown = love.audio.newSource("resources/audio/cooldown_blocked.mp3", "static")
 
 -- Music
