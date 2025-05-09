@@ -10,8 +10,10 @@ local ChargeMeleeUnit = {}
 ChargeMeleeUnit.__index = ChargeMeleeUnit
 setmetatable(ChargeMeleeUnit, {__index = BaseMeleeUnit})  -- Inherit behavior, not stats
 
--- Instead of calling BaseMeleeUnit:new(), we accept a pre-filled stat table
+-- Constructor accepts pre-calculated stats
 function ChargeMeleeUnit.new(stats)
+    -- Note: color is now set in Enemy.calculateStats
+    
     setmetatable(stats, ChargeMeleeUnit)
 
     -- Charge-specific properties
@@ -28,7 +30,6 @@ function ChargeMeleeUnit.new(stats)
     stats.chargeDirectionY = 0 -- Y direction of charge
     stats.chargeTrail = {} -- To create a trail effect during charging
     stats.trailLifetime = 0.2 -- How long trail particles last
-    stats.color = {1, 0, 0} -- Red color for this unit type
 
     return stats
 end

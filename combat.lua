@@ -22,7 +22,6 @@ local messageTimer = 0
 Combat.player      = {}
 Combat.enemies     = {}
 Combat.projectiles = {}
-Combat.waves       = {2,4,6,8,10,11}
 Combat.currentWave = 0
 Combat.playerDead  = false
 Combat.combatDone  = false
@@ -73,14 +72,10 @@ end
 
 function Combat.spawnWave()
     Combat.currentWave = Combat.currentWave + 1
-    local count = Combat.waves[Combat.currentWave] or 0
+    local count = Enemy.spawnRates.waves[Combat.currentWave] or 0
 
     for i = 1, count do
-        local roll = math.random(1, 10)
-        local enemyType = (roll <= 6) and "base"
-                      or (roll <= 8) and "charge"
-                      or "ranged"
-
+        local enemyType = Enemy.getRandomType()
         local enemy = Enemy.new(enemyType, Combat.currentWave)
         table.insert(Combat.enemies, enemy)
     end
@@ -245,7 +240,7 @@ function Combat.update(dt)
     local allDead = true
     for _, e in ipairs(Combat.enemies) do if e.alive then allDead=false; break end end
     if allDead then
-        if Combat.currentWave<#Combat.waves then Combat.spawnWave()
+        if Combat.currentWave < #Enemy.spawnRates.waves then Combat.spawnWave()
         else message="Victory!"; messageTimer=MESSAGE_DURATION; Combat.combatDone=true; assets.music.combatTheme:stop() end
     end
 
@@ -262,7 +257,7 @@ function Combat.draw()
     love.graphics.setColor(0,1,0); love.graphics.rectangle("fill", Combat.player.x, Combat.player.y-8, Combat.player.width*ratio,5)
     love.graphics.setColor(1,1,1)
     love.graphics.print("HP:"..math.floor(Combat.player.health).."/"..Combat.player.maxHealth, PADDING,10)
-    love.graphics.print("Wave:"..Combat.currentWave.."/"..#Combat.waves, PADDING,30)
+    love.graphics.print("Wave:"..Combat.currentWave.."/"..#Enemy.spawnRates.waves, PADDING,30)
 
     for _, e in ipairs(Combat.enemies) do
         if e.alive then

@@ -7,14 +7,18 @@ local BaseMeleeUnit = {}
 BaseMeleeUnit.__index = BaseMeleeUnit
 BaseMeleeUnit.slashes = {}  -- Shared slashes container
 
--- Proper 'constructor' using table inheritance
+-- Constructor that accepts pre-calculated stats
 function BaseMeleeUnit.new(stats)
-    -- Directly apply bonus without fallbacks
-    stats.health       = stats.health * 2
-    stats.maxHealth    = stats.maxHealth * 2
-    stats.speed        = stats.speed * 1.05
+    -- Base melee units get a health bonus
+    stats.health = stats.health * 2.0
+    stats.maxHealth = stats.maxHealth * 2.0
+    
+    -- Apply additional melee-specific bonuses
+    stats.speed = stats.speed * 1.05
     stats.attackDamage = stats.attackDamage * 1.2
-
+    
+    -- Note: color is now set in Enemy.calculateStats
+    
     setmetatable(stats, BaseMeleeUnit)
     return stats
 end
@@ -66,7 +70,7 @@ end
 -- Draw the unit
 function BaseMeleeUnit:draw()
     if self.alive then
-        love.graphics.setColor(1, 1, 0)
+        love.graphics.setColor(self.color)
         love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
     end
 end

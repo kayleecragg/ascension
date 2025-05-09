@@ -11,9 +11,10 @@ setmetatable(RangedUnit, {__index = BaseMeleeUnit})  -- Inherit behavior, not st
 -- Store all active beam projectiles
 RangedUnit.beams = {}
 
--- Accept a stat table instead of using BaseMeleeUnit:new()
-
+-- Constructor accepts pre-calculated stats
 function RangedUnit.new(stats)
+    -- Note: color is now set in Enemy.calculateStats
+    
     setmetatable(stats, RangedUnit)
 
     -- Beam attack properties
@@ -27,7 +28,6 @@ function RangedUnit.new(stats)
     stats.castTime = 0.8 -- Time to cast beam
     stats.castTimer = 0 -- Current cast timer
     stats.beamDirection = {x = 0, y = 0} -- Direction of the beam
-    stats.color = {0.2, 0.4, 0.8} -- Blue color for this unit type
     stats.particleTimer = 0 -- Timer for particle effects
     stats.particles = {} -- Initialize the particles table here
 
@@ -250,17 +250,6 @@ function RangedUnit:draw()
                 -math.pi/2 + (1 - cdPercent) * math.pi * 2
             )
         end
-        
-        -- -- Draw aiming direction during casting
-        -- if self.castingBeam then
-        --     love.graphics.setColor(0.4, 0.7, 1, 0.5)
-        --     love.graphics.line(
-        --         self.x + self.width/2,
-        --         self.y + self.height/2,
-        --         self.x + self.width/2 + self.beamDirection.x * 200,
-        --         self.y + self.height/2 + self.beamDirection.y * 200
-        --     )
-        -- end
     end
     
     -- Reset color
