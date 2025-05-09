@@ -82,13 +82,24 @@ function Combat.spawnWave()
         local firstType = firstTypeOptions[math.random(#firstTypeOptions)]
         local secondType = secondTypeOptions[math.random(#secondTypeOptions)]
 
-        table.insert(Combat.enemies, Enemy.new(firstType, Combat.currentWave))
-        table.insert(Combat.enemies, Enemy.new(secondType, Combat.currentWave))
+        local enemy1 = Enemy.new(firstType, Combat.currentWave)
+        if enemy1.chargeTimer then enemy1.chargeTimer = enemy1.chargeCD end
+        table.insert(Combat.enemies, enemy1)
+
+        local enemy2 = Enemy.new(secondType, Combat.currentWave)
+        if enemy2.chargeTimer then enemy2.chargeTimer = enemy2.chargeCD end
+        table.insert(Combat.enemies, enemy2)
     else
         -- Normal spawn logic for later waves
         for i = 1, count do
             local enemyType = Enemy.getRandomType()
             local enemy = Enemy.new(enemyType, Combat.currentWave)
+
+            -- charge unit cooldown when spawn
+            if enemy.chargeTimer ~= nil then
+                enemy.chargeTimer = enemy.chargeCD
+            end
+
             table.insert(Combat.enemies, enemy)
         end
     end
