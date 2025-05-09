@@ -123,6 +123,8 @@ function Combat.update(dt)
                     TakeDamage.start()
                     playSound(assets.sfx.playerHit)
                     if Combat.player.health <= 0 then
+                        Combat.player.health = 0
+                        Combat.player.alive = false
                         Combat.playerDead = true
                         message = "You died!"
                         messageTimer = MESSAGE_DURATION
@@ -210,6 +212,8 @@ function Combat.update(dt)
                 
                 -- Check if player died
                 if Combat.player.health <= 0 then
+                    Combat.player.health = 0
+                    Combat.player.alive = false
                     Combat.playerDead = true
                     message = "You died!"
                     messageTimer = MESSAGE_DURATION
