@@ -1,122 +1,133 @@
 # Ascension
 
 *A 2D narrative-driven roguelike based on the novel Tian Guan Ci Fu.*  
-Developed using the Love2D framework (Lua).
+Built with [Love2D](https://love2d.org/) (Lua).
 
-<div align="center">
-  <img src="resources/images/ascension1.png" width="70%">
-  <img src="resources/images/ascension2.png" width="70%">
-  <img src="resources/images/ascension3.png" width="70%">
-</div>
+[![Ascension Gameplay Walkthrough](resources/images/youtube.png)](https://youtu.be/1ZFHpS1bF18)
+
+![Gameplay Screenshot 1](resources/images/ascension2.png)
+![Gameplay Screenshot 3](resources/images/ascension3.png)
+
+
 
 ---
 
-## 🕹️ Gameplay Overview
+## Gameplay Overview
 
-**Ascension** follows Huacheng as he storms the Heavenly Court, challenging Martial and Literature Gods in a sequence of battles and debates. The gameplay blends **action-combat** with **dialogue-driven narrative interludes**.
+**Ascension** follows Huacheng as he storms the Heavenly Court, facing Martial and Literature Gods in a sequence of battles and debate-driven interludes. The game alternates between **real-time action combat** and **dialogue sequences** that advance the story.
 
 ### Current Playable Sections
 
-- Huacheng enters Heaven and challenges the Martial Gods
-- Huacheng defeats multiple Heavenly Officials in combat
+- Huacheng’s arrival in Heaven and challenge to the Martial Gods  
+- Combat against successive waves of Heavenly Officials
 
 ### In-Progress Sections
 
-- Debates with Literature Gods (WIP)
-- Temple-burning sequences (WIP)
-- Huacheng's origin story in Mt. Tonglu (WIP)
+- Debates with the Literature Gods  
+- Temple-burning sequences  
+- Flashbacks to Huacheng’s origin on Mt. Tonglu  
 
 ---
 
 ## Controls
 
-| Action              | Key / Mouse |
-|---------------------|-------------|
-| Move                | WASD        |
-| Melee attack (slash)| Left Mouse  |
-| Ranged attack       | Right Mouse |
-| Teleport            | Spacebar    |
-| Advance dialogue    | Spacebar    |
-| Open settings       | Escape      |
+| Action               | Key / Mouse   |
+|----------------------|---------------|
+| Move                 | W A S D       |
+| Melee attack (slash) | Left Mouse    |
+| Ranged attack        | Right Mouse   |
+| Teleport (blink)     | Spacebar      |
+| Dodge / Roll         | Left Shift    |
+| Advance dialogue     | Spacebar      |
+| Open settings        | Escape        |
 
 ---
 
 ## Player Stats
 
-| Attribute       | Value             |
-|----------------|-------------------|
-| Health          | 100              |
-| Move Speed      | 200 px/s         |
-| Melee Damage     | 5               |
-| Melee Range      | 120             |
-| Melee Cooldown   | 1s              |
-| Ranged Damage    | 2 per projectile |
-| Ranged Projectiles | 5 (spread)     |
-| Ranged Cooldown | 2s               |
-| Teleport Cooldown | 12s             |
+| Attribute            | Value              |
+|----------------------|--------------------|
+| Health               | 100                |
+| Move Speed           | 200 px/s           |
+| Melee Damage         | 5                  |
+| Melee Range          | 120 px             |
+| Melee Cooldown       | 1 s                |
+| Ranged Damage        | 2 (per projectile) |
+| Ranged Projectiles   | 5 (in a spread)    |
+| Ranged Cooldown      | 2 s                |
+| Teleport Radius      | 370 px             |
+| Teleport Cooldown    | 12 s               |
+| Dodge Duration       | 0.4 s              |
+| Dodge Cooldown       | 4 s                |
 
 ---
 
 ## Player Abilities
 
-### E-ming Slash (Melee)
-- Wide area slash aimed at cursor.
-- Cooldown: 1 second.
+### E-ming Slash (Melee)  
+- A wide-area slash aimed at your cursor.  
+- **Cooldown:** 1 s  
 
-### Silver Butterflies (Ranged)
-- Fires 5 projectiles in a spread.
-- Cooldown: 2 seconds.
+### Silver Butterflies (Ranged)  
+- Fires 5 projectiles in a spread pattern.  
+- **Cooldown:** 2 s  
 
-### Teleport
-- Blink to mouse location within 370px radius.
-- Cooldown: 12 seconds.
-- Useful for dodging and repositioning.
+### Teleport (Blink)  
+- Instant blink to your mouse position, up to **370 px** away.  
+- **Cooldown:** 12 s  
+- Great for quick repositioning or dodging enemy attacks.  
+
+### Dodge
+- A short, directional roll that briefly boosts your speed.  
+- Over the **0.4 s** roll, your speed follows a **4 → 3 → 2 → 1** multiplier curve.  
+- **Cooldown:** 4 s  
+- Use to slip through enemy attacks or close gaps.
 
 ---
 
-## 👹 Enemy Types
+## Enemy Types
 
-### 🟡 Base Melee Unit
-- Basic attacker with slashing behavior.
-- Moderate health and movement speed.
-- Color: Yellow.
+### 🟡 Base Melee Unit  
+- Standard slashing enemy.  
+- Balanced health & speed.  
+- **Color:** Yellow  
 
-### 🔴 Charge Unit
-- Aggressive melee unit with a **charge dash** that deals high damage.
-- Starts waves on cooldown to prevent early burst.
-- Fastest movement.
-- Color: Red.
+### 🔴 Charge Unit  
+- Leaps in with a high-damage charge dash.  
+- Faster than base units but lower health.  
+- Starts each wave on its charge cooldown to avoid early burst.  
+- **Color:** Red  
 
-### 🔵 Ranged Unit
-- Casts a **beam attack** that damages anything in its path.
-- Has a visible charge-up time.
-- Fragile but dangerous.
-- Color: Blue.
+### 🔵 Ranged Unit  
+- Channels a beam attack that damages anything in its line of fire.  
+- Has a visible casting phase before firing.  
+- Fragile but punishing if you’re caught in the beam.  
+- **Color:** Blue  
 
 ---
 
 ## Enemy Stats Scaling
 
-Enemy stats scale per wave based on the following base stats:
+Each enemy’s stats scale per wave:
 
-| Base Stat        | Value     |
-|------------------|-----------|
-| Health per wave  | +4        |
-| Speed per wave   | +15 px/s  |
-| Max speed per wave | +15 px/s |
-| Base attack damage | 1       |
-| Base attack cooldown | 1.5s  |
+| Base Stat             | Increment per Wave |
+|-----------------------|--------------------|
+| Health                | +4                 |
+| Move Speed            | +15 px/s           |
+| Max Speed             | +15 px/s           |
+| Base Attack Damage    | 1                  |
+| Base Attack Cooldown  | 1.5 s              |
 
-Each enemy type applies multipliers to these values. For example:
+Type-specific multipliers:
 
-- Charge units have **0.6× health**, **1.25× speed**, and **1.2× charge damage**
-- Ranged units have **0.4× health**, **longer range**, and **beam attacks**
+- **Charge units:** 0.6× health, 1.25× speed, 1.2× charge damage  
+- **Ranged units:** 0.4× health, 1.2× attack range, beam attacks  
 
 ---
 
-## Wave System
+## 🗡️ Wave System
 
-Enemies spawn in structured waves:
+Enemies spawn in fixed waves:
 
 ```lua
-Enemy.spawnRates.waves = {2, 4, 6, 8, 10, 11}
+Enemy.spawnRates.waves = { 2, 4, 6, 8, 10, 11 }
