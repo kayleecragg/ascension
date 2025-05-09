@@ -10,8 +10,8 @@ BaseMeleeUnit.slashes = {}  -- Shared slashes container
 -- Constructor that accepts pre-calculated stats
 function BaseMeleeUnit.new(stats)
     -- Base melee units get a health bonus
-    stats.health = stats.health * 2.0
-    stats.maxHealth = stats.maxHealth * 2.0
+    stats.health = stats.health * 1.2
+    stats.maxHealth = stats.maxHealth * 1.2
     
     -- Apply additional melee-specific bonuses
     stats.speed = stats.speed * 1.05

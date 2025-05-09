@@ -74,10 +74,23 @@ function Combat.spawnWave()
     Combat.currentWave = Combat.currentWave + 1
     local count = Enemy.spawnRates.waves[Combat.currentWave] or 0
 
-    for i = 1, count do
-        local enemyType = Enemy.getRandomType()
-        local enemy = Enemy.new(enemyType, Combat.currentWave)
-        table.insert(Combat.enemies, enemy)
+    -- Custom handling for first wave
+    if Combat.currentWave == 1 then
+        -- Spawn two enemies of different types
+        local firstTypeOptions = {"base", "ranged", "charge"}
+        local secondTypeOptions = {"charge", "ranged"}
+        local firstType = firstTypeOptions[math.random(#firstTypeOptions)]
+        local secondType = secondTypeOptions[math.random(#secondTypeOptions)]
+
+        table.insert(Combat.enemies, Enemy.new(firstType, Combat.currentWave))
+        table.insert(Combat.enemies, Enemy.new(secondType, Combat.currentWave))
+    else
+        -- Normal spawn logic for later waves
+        for i = 1, count do
+            local enemyType = Enemy.getRandomType()
+            local enemy = Enemy.new(enemyType, Combat.currentWave)
+            table.insert(Combat.enemies, enemy)
+        end
     end
 end
 
