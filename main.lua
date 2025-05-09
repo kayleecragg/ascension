@@ -12,7 +12,7 @@ local Fade     = require("effects.fade")
 local scriptPath = debug.getinfo(1).source:match("@?(.*/)") or "./"
 package.path = package.path .. ";"
              .. scriptPath .. "?.lua;"           -- current dir
-             .. scriptPath .. "enemies/?.lua;"   -- enemies
+             .. scriptPath .. "entities/?.lua;"   -- enemies
              .. scriptPath .. "effects/?.lua;"   -- effects
 
 -- state tracking

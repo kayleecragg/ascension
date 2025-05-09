@@ -1,36 +1,36 @@
 -- ChargeMeleeUnit.lua
-local BaseMeleeUnit = require("enemies.BaseMeleeUnit")
+-- A specialized melee unit that can charge at the player for high damage.
+
+local BaseMeleeUnit = require("entities.BaseMeleeUnit")
 local Slash = require("effects.Slash")
 local TakeDamage = require("effects.takeDamage")
+local util = require("util")
 
 local ChargeMeleeUnit = {}
 ChargeMeleeUnit.__index = ChargeMeleeUnit
-setmetatable(ChargeMeleeUnit, {__index = BaseMeleeUnit})  -- This sets up inheritance
+setmetatable(ChargeMeleeUnit, {__index = BaseMeleeUnit})  -- Inherit behavior, not stats
 
-function ChargeMeleeUnit:new(x, y, width, height, health, maxHealth, speed, maxSpeed, attackDamage, attackRange, attackCD, attackTimer)
-    -- Call the parent constructor
-    local unit = BaseMeleeUnit:new(x, y, width, height, health, maxHealth, speed, maxSpeed, attackDamage, attackRange, attackCD, attackTimer)
-    
-    -- Change the metatable to ChargeMeleeUnit
-    setmetatable(unit, ChargeMeleeUnit)
-    
-    -- Add ChargeMeleeUnit specific properties
-    unit.chargeCD = 5       -- Cooldown for charge ability
-    unit.chargeTimer = 0    -- Current cooldown timer
-    unit.chargeSpeed = unit.maxSpeed * 5  -- Speed while charging (5x normal max speed)
-    unit.chargeDamage = unit.attackDamage * 1.2  -- Damage done by charge
-    unit.isCharging = false  -- Whether currently in charging state
-    unit.chargeDuration = 0.8  -- How long the charge lasts
-    unit.chargeTime = 0     -- Current charge timer
-    unit.chargeTargetX = 0  -- X coordinate target for charge
-    unit.chargeTargetY = 0  -- Y coordinate target for charge
-    unit.chargeDirectionX = 0  -- X direction of charge
-    unit.chargeDirectionY = 0  -- Y direction of charge
-    unit.chargeTrail = {}   -- To create a trail effect during charging
-    unit.trailLifetime = 0.4  -- How long trail particles last
-    unit.color = {0.8, 0.2, 0.2}  -- Red color for this unit type
-    
-    return unit
+-- Instead of calling BaseMeleeUnit:new(), we accept a pre-filled stat table
+function ChargeMeleeUnit.new(stats)
+    setmetatable(stats, ChargeMeleeUnit)
+
+    -- Charge-specific properties
+    stats.chargeCD = 5       -- Cooldown for charge ability
+    stats.chargeTimer = 0    -- Current cooldown timer
+    stats.chargeSpeed = stats.maxSpeed * 5  -- Speed while charging (5x normal max speed)
+    stats.chargeDamage = stats.attackDamage * 1.2  -- Damage done by charge
+    stats.isCharging = false -- Whether currently in charging state
+    stats.chargeDuration = 0.8 -- How long the charge lasts
+    stats.chargeTime = 0 -- Current charge timer
+    stats.chargeTargetX = 0 -- X coordinate target for charge
+    stats.chargeTargetY = 0 -- Y coordinate target for charge
+    stats.chargeDirectionX = 0 -- X direction of charge
+    stats.chargeDirectionY = 0 -- Y direction of charge
+    stats.chargeTrail = {} -- To create a trail effect during charging
+    stats.trailLifetime = 0.2 -- How long trail particles last
+    stats.color = {1, 0, 0} -- Red color for this unit type
+
+    return stats
 end
 
 function ChargeMeleeUnit:ability(target)
@@ -82,9 +82,14 @@ function ChargeMeleeUnit:update(dt, target)
         -- Move in charging direction
         local moveX = self.chargeDirectionX * self.chargeSpeed * dt
         local moveY = self.chargeDirectionY * self.chargeSpeed * dt
-        
+
         self.x = self.x + moveX
         self.y = self.y + moveY
+
+        -- Clamp within screen bounds
+        local w, h = love.graphics.getDimensions()
+        self.x = util.clamp(self.x, 20, w - self.width - 20)
+        self.y = util.clamp(self.y, 20, h - self.height - 20)
         
         -- Add trail particles
         if math.random() < 0.3 then  -- Only add some particles for performance

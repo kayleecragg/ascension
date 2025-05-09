@@ -1,38 +1,39 @@
--- enemies/RangedUnit.lua
-local BaseMeleeUnit = require("enemies.BaseMeleeUnit")
+-- RangedUnit.lua
+-- A ranged enemy that shoots a beam after charging up.
+
+local BaseMeleeUnit = require("entities.BaseMeleeUnit")
 local Slash = require("effects.Slash")
 
 local RangedUnit = {}
 RangedUnit.__index = RangedUnit
-setmetatable(RangedUnit, {__index = BaseMeleeUnit})  -- Set up inheritance
+setmetatable(RangedUnit, {__index = BaseMeleeUnit})  -- Inherit behavior, not stats
 
 -- Store all active beam projectiles
 RangedUnit.beams = {}
 
-function RangedUnit:new(x, y, width, height, health, maxHealth, speed, maxSpeed, attackDamage, attackRange, attackCD, attackTimer)
-    -- Call the parent constructor
-    local unit = BaseMeleeUnit:new(x, y, width, height, health, maxHealth, speed, maxSpeed, attackDamage, attackRange, attackCD, attackTimer)
-    
-    -- Change the metatable to RangedUnit
-    setmetatable(unit, RangedUnit)
-    
-    -- Add RangedUnit specific properties
-    unit.beamCD = 3        -- Cooldown for beam ability (longer than charge)
-    unit.beamTimer = 0     -- Current cooldown timer
-    unit.beamDamage = unit.attackDamage * 2  -- Damage done by beam
-    unit.beamSpeed = 900   -- Speed of the beam projectile
-    unit.beamWidth = 30    -- Width of the beam
-    unit.beamLength = 80   -- Length of the beam
-    unit.castingBeam = false  -- Whether currently casting a beam
-    unit.castTime = 0.8    -- Time to cast beam
-    unit.castTimer = 0     -- Current cast timer
-    unit.beamDirection = {x = 0, y = 0}  -- Direction of the beam
-    unit.color = {0.2, 0.4, 0.8}  -- Blue color for this unit type
-    unit.particleTimer = 0  -- Timer for particle effects
-    unit.particles = {}    -- Initialize the particles table here
-    
-    return unit
+-- Accept a stat table instead of using BaseMeleeUnit:new()
+
+function RangedUnit.new(stats)
+    setmetatable(stats, RangedUnit)
+
+    -- Beam attack properties
+    stats.beamCD = 3 -- Cooldown for beam ability (longer than charge)
+    stats.beamTimer = 0 -- Current cooldown timer
+    stats.beamDamage = stats.attackDamage * 2 -- Damage done by beam
+    stats.beamSpeed = 900 -- Speed of the beam projectile
+    stats.beamWidth = 30 -- Width of the beam
+    stats.beamLength = 80 -- Length of the beam
+    stats.castingBeam = false -- Whether currently casting a beam
+    stats.castTime = 0.8 -- Time to cast beam
+    stats.castTimer = 0 -- Current cast timer
+    stats.beamDirection = {x = 0, y = 0} -- Direction of the beam
+    stats.color = {0.2, 0.4, 0.8} -- Blue color for this unit type
+    stats.particleTimer = 0 -- Timer for particle effects
+    stats.particles = {} -- Initialize the particles table here
+
+    return stats
 end
+
 
 function RangedUnit:ability(target)
     if self.beamTimer <= 0 and not self.castingBeam and self.alive then

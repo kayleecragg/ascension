@@ -2,12 +2,12 @@
 
 local assets     = require("assets")
 local util       = require("util")
-local Player     = require("entities.player")
+local Player     = require("entities.Player")
+local Enemy      = require("entities.Enemy")
 local TakeDamage = require("effects.takeDamage")
 local Slash      = require("effects.Slash")
-local BaseMeleeUnit = require("enemies.BaseMeleeUnit")
-local ChargeMeleeUnit = require("enemies.ChargeMeleeUnit")
-local RangedUnit = require("enemies.RangedUnit")
+local BaseMeleeUnit = require("entities.BaseMeleeUnit")
+local RangedUnit = require("entities.RangedUnit")
 
 local Combat     = {}
 
@@ -28,7 +28,7 @@ Combat.playerDead  = false
 Combat.combatDone  = false
 
 -- Projectile settings
-Combat.projSpeed  = 500
+Combat.projSpeed  = 700
 Combat.projCount  = 5
 Combat.projSpread = math.rad(15)
 
@@ -74,62 +74,15 @@ end
 function Combat.spawnWave()
     Combat.currentWave = Combat.currentWave + 1
     local count = Combat.waves[Combat.currentWave] or 0
-    
+
     for i = 1, count do
-        local enemyType = math.random(1, 10)  -- Random enemy type
-        
-        if enemyType <= 6 then
-            -- Regular melee unit (60% chance)
-            local enemy = BaseMeleeUnit:new(
-                math.random(100,700),  -- x
-                math.random(100,500),  -- y
-                50,                    -- width
-                50,                    -- height
-                2 + Combat.currentWave*2, -- health
-                2 + Combat.currentWave*2, -- maxHealth
-                80 + Combat.currentWave*20, -- speed
-                120 + Combat.currentWave*20, -- maxSpeed
-                1,                     -- attackDamage
-                50,                    -- attackRange
-                1.5,                   -- attackCD
-                0                      -- attackTimer
-            )
-            table.insert(Combat.enemies, enemy)
-        elseif enemyType <= 8 then
-            -- Charge melee unit (20% chance)
-            local enemy = ChargeMeleeUnit:new(
-                math.random(100,700),  -- x
-                math.random(100,500),  -- y
-                55,                    -- width (slightly bigger)
-                55,                    -- height
-                3 + Combat.currentWave*2, -- health (more health)
-                3 + Combat.currentWave*2, -- maxHealth
-                75 + Combat.currentWave*20, -- speed (slightly slower normally)
-                110 + Combat.currentWave*20, -- maxSpeed
-                1,                     -- attackDamage
-                50,                    -- attackRange
-                2,                     -- attackCD (slower attacks)
-                0                      -- attackTimer
-            )
-            table.insert(Combat.enemies, enemy)
-        else
-            -- Ranged melee unit (20% chance)
-            local enemy = RangedUnit:new(
-                math.random(100,700),  -- x
-                math.random(100,500),  -- y
-                45,                    -- width (slightly smaller)
-                45,                    -- height
-                2 + Combat.currentWave*2, -- health (standard health)
-                2 + Combat.currentWave*2, -- maxHealth
-                45 + Combat.currentWave*20, -- speed (slightly slower)
-                130 + Combat.currentWave*20, -- maxSpeed
-                1,                     -- attackDamage
-                60,                    -- attackRange (slightly longer range)
-                999,                   -- can't attack normally
-                0                      -- attackTimer
-            )
-            table.insert(Combat.enemies, enemy)
-        end
+        local roll = math.random(1, 10)
+        local enemyType = (roll <= 6) and "base"
+                      or (roll <= 8) and "charge"
+                      or "ranged"
+
+        local enemy = Enemy.new(enemyType, Combat.currentWave)
+        table.insert(Combat.enemies, enemy)
     end
 end
 
