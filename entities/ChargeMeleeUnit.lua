@@ -29,7 +29,7 @@ function ChargeMeleeUnit.new(stats)
     stats.chargeDirectionX = 0 -- X direction of charge
     stats.chargeDirectionY = 0 -- Y direction of charge
     stats.chargeTrail = {} -- To create a trail effect during charging
-    stats.trailLifetime = 0.2 -- How long trail particles last
+    stats.trailLifetime = 0.4 -- How long trail particles last (increased from 0.2)
 
     return stats
 end
@@ -75,6 +75,28 @@ end
 function ChargeMeleeUnit:update(dt, target)
     -- Update charge cooldown
     self.chargeTimer = math.max(0, self.chargeTimer - dt)
+    
+    -- Update trail particles - moved outside of charging check to ensure
+    -- particles continue to update even after charge ends
+    for i = #self.chargeTrail, 1, -1 do
+        local p = self.chargeTrail[i]
+        p.timer = p.timer + dt
+        
+        -- Move particles that have momentum
+        if p.dx and p.dy then
+            p.x = p.x + p.dx * dt
+            p.y = p.y + p.dy * dt
+            
+            -- Slow down particles
+            p.dx = p.dx * 0.92  -- Slightly slower decay for better visual
+            p.dy = p.dy * 0.92
+        end
+        
+        -- Remove expired particles
+        if p.timer >= p.lifetime then
+            table.remove(self.chargeTrail, i)
+        end
+    end
     
     if self.isCharging then
         -- Update charge timer
@@ -141,30 +163,6 @@ function ChargeMeleeUnit:update(dt, target)
             self.isCharging = false
             self.chargeTimer = self.chargeCD  -- Start cooldown
         end
-        
-        -- Update trail particles
-        for i = #self.chargeTrail, 1, -1 do
-            local p = self.chargeTrail[i]
-            p.timer = p.timer + dt
-            
-            -- Move particles that have momentum
-            if p.dx and p.dy then
-                p.x = p.x + p.dx * dt
-                p.y = p.y + p.dy * dt
-                
-                -- Slow down particles
-                p.dx = p.dx * 0.95
-                p.dy = p.dy * 0.95
-            end
-            
-            -- Fade out
-            p.color[4] = 0.9 * (1 - (p.timer / p.lifetime))
-            
-            -- Remove expired particles
-            if p.timer >= p.lifetime then
-                table.remove(self.chargeTrail, i)
-            end
-        end
     else
         -- Not charging, use normal AI
         if math.random() < 0.01 and target then  -- Small chance to use charge ability
@@ -179,8 +177,15 @@ end
 function ChargeMeleeUnit:draw()
     -- Draw charge trail
     for _, p in ipairs(self.chargeTrail) do
-        love.graphics.setColor(p.color)
-        love.graphics.circle("fill", p.x, p.y, p.size * (1 - (p.timer / p.lifetime)))
+        -- Calculate alpha based on remaining lifetime
+        local alpha = p.color[4] * (1 - (p.timer / p.lifetime))
+        
+        -- Apply the fading alpha value
+        love.graphics.setColor(p.color[1], p.color[2], p.color[3], alpha)
+        
+        -- Draw the particle with a size that might diminish slightly over time
+        local sizeMultiplier = 1 - (p.timer / p.lifetime) * 0.3
+        love.graphics.circle("fill", p.x, p.y, p.size * sizeMultiplier)
     end
     
     -- Draw the unit with appropriate color
