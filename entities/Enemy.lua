@@ -64,9 +64,9 @@ Enemy.spawnRates = {
     -- Enemy type probability distribution (out of 10):
     -- Values represent the upper bound of the range for each type
     typeChances = {
-        base = 6,    -- 1-6 (60% chance)
-        charge = 8,  -- 7-8 (20% chance)
-        ranged = 10  -- 9-10 (20% chance)
+        base = 4,    -- 1-4 (40% chance)
+        charge = 7,  -- 5-7 (30% chance)
+        ranged = 10  -- 8-10 (30% chance)
     }
 }
 
