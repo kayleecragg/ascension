@@ -53,7 +53,7 @@ Developed using the Love2D framework (Lua).
 | Ranged Damage    | 2 per projectile |
 | Ranged Projectiles | 5 (spread)     |
 | Ranged Cooldown | 2s               |
-| Teleport Cooldown | 5s             |
+| Teleport Cooldown | 12s             |
 
 ---
 
@@ -68,8 +68,8 @@ Developed using the Love2D framework (Lua).
 - Cooldown: 2 seconds.
 
 ### Teleport
-- Instantly blink to mouse location.
-- Cooldown: 5 seconds.
+- Blink to mouse location within 370px radius.
+- Cooldown: 12 seconds.
 - Useful for dodging and repositioning.
 
 ---

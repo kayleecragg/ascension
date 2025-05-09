@@ -15,7 +15,7 @@ function Player.new()
         rangedCD = 2,
         rangedTimer = 0,
         rangedDamage = 2,
-        teleportCD = 5,
+        teleportCD = 12,
         teleportTimer = 0,
     }
 end
