@@ -147,7 +147,6 @@ function Combat.update(dt)
             Combat.dodging   = false
             Combat.dodgeTime = 0
         end
-        return
     end
 
     -- normal movement (block while teleport-aiming)
