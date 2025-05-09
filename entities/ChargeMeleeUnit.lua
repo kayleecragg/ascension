@@ -5,6 +5,7 @@ local BaseMeleeUnit = require("entities.BaseMeleeUnit")
 local Slash = require("effects.Slash")
 local TakeDamage = require("effects.takeDamage")
 local util = require("util")
+local Combat = require("combat")
 
 local ChargeMeleeUnit = {}
 ChargeMeleeUnit.__index = ChargeMeleeUnit
@@ -139,7 +140,11 @@ function ChargeMeleeUnit:update(dt, target)
                 -- Hit the player!
                 target.health = target.health - self.chargeDamage
                 TakeDamage.start()
-                
+
+                if target.health <= 0 then
+                    Combat.killPlayer()
+                end
+
                 -- Create an impact effect
                 for i = 1, 8 do
                     local angle = math.random() * math.pi * 2
@@ -156,6 +161,7 @@ function ChargeMeleeUnit:update(dt, target)
                     })
                 end
             end
+
         end
         
         -- End charge after duration expires

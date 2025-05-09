@@ -12,7 +12,7 @@ local RangedUnit    = require("entities.RangedUnit")
 local Combat        = {}
 
 -- constants
-local PADDING          = 20
+local PADDING          = 40
 local MESSAGE_DURATION = 2
 local TELEPORT_RANGE   = 370
 local DODGE_DURATION   = 0.4
@@ -57,9 +57,20 @@ local function drawAbilityBox(x, y, size, timer, maxCD, label)
     end
     love.graphics.setColor(1,1,1)
     love.graphics.rectangle("line", x, y, size, size)
-    love.graphics.printf(label, x, y+size+2, size, "center")
+    local textW = assets.dialogueFont:getWidth(label)
+    love.graphics.print(label, x + size/2 - textW/2, y + size + 2)
     if timer > 0 then
         love.graphics.printf(string.format("%.1f", timer), x, y + size/2 - 6, size, "center")
+    end
+end
+
+-- helper to kill player
+function Combat.killPlayer()
+    Combat.player.health = 0
+    Combat.player.alive = false
+    Combat.playerDead = true
+    if assets.music.combatTheme then
+        assets.music.combatTheme:stop()
     end
 end
 
@@ -169,12 +180,9 @@ function Combat.update(dt)
                     TakeDamage.start()
                     playSound(assets.sfx.playerHit)
                     if Combat.player.health <= 0 then
-                        Combat.player.health = 0
-                        Combat.player.alive  = false
-                        Combat.playerDead     = true
-                        message                = "You died!"
-                        messageTimer          = MESSAGE_DURATION
-                        assets.music.combatTheme:stop()
+                        Combat.killPlayer()
+                        message = "You died!"
+                        messageTimer = MESSAGE_DURATION
                     end
                 end
             elseif not s.isEnemy then

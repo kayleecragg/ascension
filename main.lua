@@ -11,9 +11,9 @@ local Fade     = require("effects.fade")
 -- debug-based script path setup
 local scriptPath = debug.getinfo(1).source:match("@?(.*/)") or "./"
 package.path = package.path .. ";"
-             .. scriptPath .. "?.lua;"           -- current dir
-             .. scriptPath .. "entities/?.lua;"   -- enemies
-             .. scriptPath .. "effects/?.lua;"   -- effects
+             .. scriptPath .. "?.lua;"
+             .. scriptPath .. "entities/?.lua;"
+             .. scriptPath .. "effects/?.lua;"
 
 -- state tracking
 local currentState  = "intro"
@@ -26,12 +26,9 @@ function love.load()
 end
 
 function love.update(dt)
-    -- update fade
     Fade.update(dt)
-    -- if mid-fade, skip state updates
     if Fade.state ~= "none" then return end
 
-    -- handle state-specific updates
     if currentState == "combat" then
         combat.update(dt)
         if combat.isDead() then
@@ -50,32 +47,45 @@ function love.update(dt)
 
     elseif currentState == "intro" or currentState == "mid" then
         dialogue.update(dt)
+
+    elseif currentState == "instructions" then
+        -- no update logic for static screen
     end
 end
 
 function love.draw()
-    -- draw based on current state
     if currentState == "intro" or currentState == "mid" then
         dialogue.draw()
+
+    elseif currentState == "instructions" then
+        love.graphics.setFont(assets.dialogueFont)
+        local w, h = love.graphics.getDimensions()
+        love.graphics.printf("INSTRUCTIONS:\n\n- Move: W A S D\n- Dodge: Left Shift\n- Melee Attack: Left Click\n- Ranged Attack: Right Click\n- Teleport: Space (then click)\n\nPress SPACE to begin combat.",
+            0, h * 0.2, w, "center")
+
     elseif currentState == "combat" then
         combat.draw()
+
     elseif currentState == "debate" then
         debate.draw()
+
     elseif currentState == "death" then
         love.graphics.setFont(assets.bigFont)
         love.graphics.printf("YOU DIED",
             0, love.graphics.getHeight()/2,
             love.graphics.getWidth(), "center")
+
     elseif currentState == "victory" then
         love.graphics.setFont(assets.bigFont)
         love.graphics.printf("VICTORY!",
             0, love.graphics.getHeight()/2,
             love.graphics.getWidth(), "center")
+
     elseif currentState == "settings" then
         settings.draw()
     end
 
-    -- draw fade overlay on top
+    -- fade overlay always on top
     local w,h = love.graphics.getDimensions()
     Fade.draw(w, h)
 end
@@ -96,24 +106,21 @@ function love.keypressed(key)
         return
     end
 
-    -- ignore other input while fading
     if Fade.state ~= "none" then return end
 
-    -- settings input
     if currentState == "settings" then
         settings.keypressed(key)
         return
     end
 
-    -- dialogue input
+    -- Dialogue input
     if currentState == "intro" or currentState == "mid" then
         if key == "space" then
             local done = dialogue.nextLine()
             if done then
                 if currentState == "intro" then
-                    Fade.start("combat", function()
-                        currentState = "combat"
-                        combat.start()
+                    Fade.start("instructions", function()
+                        currentState = "instructions"
                     end)
                 else
                     Fade.start("debate", function()
@@ -124,11 +131,20 @@ function love.keypressed(key)
             end
         end
 
-    -- combat input
+    -- Instructions input
+    elseif currentState == "instructions" then
+        if key == "space" then
+            Fade.start("combat", function()
+                currentState = "combat"
+                combat.start()
+            end)
+        end
+
+    -- Combat input
     elseif currentState == "combat" then
         combat.keypressed(key)
 
-    -- debate placeholder
+    -- Debate input
     elseif currentState == "debate" then
         if key == "space" then
             Fade.start("victory", function()
@@ -136,7 +152,7 @@ function love.keypressed(key)
             end)
         end
 
-    -- death or victory reset
+    -- Death or Victory reset
     elseif currentState == "death" or currentState == "victory" then
         if key == "space" then
             Fade.start("intro", function()
@@ -149,7 +165,6 @@ function love.keypressed(key)
 end
 
 function love.mousepressed(x, y, button)
-    -- only pass through when in combat and not fading
     if currentState == "combat" and Fade.state == "none" then
         combat.mousepressed(x, y, button)
     end
