@@ -125,7 +125,7 @@ Type-specific multipliers:
 
 ---
 
-## 🗡️ Wave System
+## Wave System
 
 Enemies spawn in fixed waves:
 

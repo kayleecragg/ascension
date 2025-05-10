@@ -59,7 +59,7 @@ Enemy.typeMultipliers = {
 -- Spawn rate configuration - moved from combat.lua
 Enemy.spawnRates = {
     -- Wave configuration - number of enemies per wave
-    waves = {2, 4, 6, 8, 10, 11},
+    waves = {2, 5, 7, 8, 9, 10},
     
     -- Enemy type probability distribution (out of 10):
     -- Values represent the upper bound of the range for each type
