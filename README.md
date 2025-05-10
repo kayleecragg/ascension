@@ -130,4 +130,4 @@ Type-specific multipliers:
 Enemies spawn in fixed waves:
 
 ```lua
-Enemy.spawnRates.waves = { 2, 4, 6, 8, 10, 11 }
+waves = {2, 5, 7, 8, 9, 10}
