@@ -6,7 +6,7 @@ local combat   = require("combat")
 local debate   = require("debate")
 local util     = require("util")
 local settings = require("settings")
-local Fade     = require("effects.fade")
+local Fade     = require("effects.Fade")
 local States   = require("states")
 
 -- debug-based script path setup

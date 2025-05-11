@@ -3,7 +3,7 @@
 *A 2D narrative-driven roguelike based on the novel Tian Guan Ci Fu.*  
 Built with [Love2D](https://love2d.org/) (Lua).
 
-[![Ascension Gameplay Walkthrough](resources/images/youtube.png)](https://youtu.be/1ZFHpS1bF18)
+[![Ascension Gameplay Walkthrough](resources/images/youtube.png)](https://youtu.be/FHOgZQkW0RY)
 
 ![Gameplay Screenshot 1](resources/images/ascension2.png)
 ![Gameplay Screenshot 3](resources/images/ascension3.png)
