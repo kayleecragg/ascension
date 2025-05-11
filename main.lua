@@ -7,7 +7,7 @@ local debate   = require("debate")
 local util     = require("util")
 local settings = require("settings")
 local Fade     = require("effects.fade")
-local States   = require("states") -- new
+local States   = require("states")
 
 -- debug-based script path setup
 local scriptPath = debug.getinfo(1).source:match("@?(.*/)") or "./"
@@ -20,10 +20,33 @@ package.path = package.path .. ";"
 local currentState  = States.INTRO
 local previousState
 
+local function playMusicForState(state)
+    for _, music in pairs(assets.music) do
+        music:stop()
+    end
+    if state == States.INTRO then
+        assets.music.introTheme:play()
+    elseif state == States.MID then
+        assets.music.midTheme:play()
+    elseif state == States.COMBAT then
+        assets.music.combatTheme:setVolume(0.3)
+        assets.music.combatTheme:play()
+    elseif state == States.DEBATE then
+        assets.music.debateTheme:play()
+    elseif state == States.VICTORY then
+        assets.music.victoryTheme:play()
+    elseif state == States.DEATH then
+        assets.music.deathTheme:play()
+    end
+end
+
+
 function love.load()
     love.graphics.setFont(assets.dialogueFont)
     settings.apply()
     dialogue.start(dialogue.introLines)
+    playMusicForState(currentState)
+
 end
 
 function love.update(dt)
@@ -40,6 +63,7 @@ function love.update(dt)
             Fade.start("mid", function()
                 currentState = States.MID
                 dialogue.start(dialogue.midLines)
+                playMusicForState(currentState)
             end)
         end
 
@@ -136,6 +160,7 @@ function love.keypressed(key)
                     Fade.start(States.DEBATE, function()
                         currentState = States.DEBATE
                         debate.start()
+                        playMusicForState(currentState)
                     end)
                 end
             end
@@ -147,6 +172,7 @@ function love.keypressed(key)
             Fade.start(States.COMBAT, function()
                 currentState = States.COMBAT
                 combat.start()
+                playMusicForState(currentState)
             end)
         end
 
@@ -159,6 +185,7 @@ function love.keypressed(key)
         if key == "space" then
             Fade.start(States.VICTORY, function()
                 currentState = States.VICTORY
+                playMusicForState(currentState)
             end)
         end
 
@@ -166,13 +193,14 @@ function love.keypressed(key)
     elseif currentState == States.DEATH or currentState == States.VICTORY then
         if key == "space" then
             Fade.start(States.INTRO, function()
-                -- stop music so it doesn't leak into intro
-                if assets.music.combatTheme:isPlaying() then
-                    assets.music.combatTheme:stop()
+                -- stop all music
+                for _, m in pairs(assets.music) do
+                    if m:isPlaying() then m:stop() end
                 end
                 combat.reset()
                 dialogue.start(dialogue.introLines)
                 currentState = States.INTRO
+                playMusicForState(currentState)
             end)
         end
     end

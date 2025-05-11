@@ -81,6 +81,7 @@ function Combat.killPlayer()
         message              = "You died!"
         messageTimer         = MESSAGE_DURATION
         assets.music.combatTheme:stop()
+        if assets.music.deathTheme then assets.music.deathTheme:play() end
     end
 end
 

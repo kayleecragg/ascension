@@ -40,7 +40,16 @@ assets.sfx.abilityCooldown = love.audio.newSource("resources/audio/cooldown_bloc
 
 -- Music
 assets.music = {}
-assets.music.combatTheme = love.audio.newSource("resources/audio/combat_theme.mp3", "stream")
-assets.music.combatTheme:setLooping(true)
+assets.music.combatTheme  = love.audio.newSource("resources/audio/combat_theme.mp3", "stream")
+assets.music.introTheme   = love.audio.newSource("resources/audio/intro_theme.mp3", "stream")
+assets.music.midTheme     = love.audio.newSource("resources/audio/intro_theme.mp3", "stream")
+assets.music.debateTheme  = love.audio.newSource("resources/audio/debate_theme.mp3", "stream")
+assets.music.victoryTheme = love.audio.newSource("resources/audio/victory_theme.mp3", "stream")
+assets.music.deathTheme   = love.audio.newSource("resources/audio/death_theme.mp3", "stream")
+
+-- Ensure all music loops
+for _, track in pairs(assets.music) do
+    track:setLooping(true)
+end
 
 return assets
