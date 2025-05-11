@@ -97,8 +97,16 @@ function love.keypressed(key)
         if currentState == States.SETTINGS then
             Fade.start(previousState or States.INTRO, function()
                 currentState = previousState or States.INTRO
+                -- Resume music if it was paused
+                if assets.music.combatTheme and currentState == States.COMBAT then
+                    assets.music.combatTheme:play()
+                end
             end)
         else
+            -- Pause music if we're in combat
+            if currentState == States.COMBAT and assets.music.combatTheme:isPlaying() then
+                assets.music.combatTheme:pause()
+            end
             previousState = currentState
             Fade.start(States.SETTINGS, function()
                 currentState = States.SETTINGS
@@ -106,6 +114,7 @@ function love.keypressed(key)
         end
         return
     end
+
 
     if Fade.state ~= "none" then return end
 
