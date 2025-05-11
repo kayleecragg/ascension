@@ -149,8 +149,8 @@ function Combat.update(dt)
         end
     end
 
-    -- normal movement (block while teleport-aiming)
-    if Combat.player.alive and not Combat.teleportAiming then
+
+    if Combat.player.alive then
         if love.keyboard.isDown("a") then Combat.player.x = Combat.player.x - Combat.player.speed * dt end
         if love.keyboard.isDown("d") then Combat.player.x = Combat.player.x + Combat.player.speed * dt end
         if love.keyboard.isDown("w") then Combat.player.y = Combat.player.y - Combat.player.speed * dt end
