@@ -361,6 +361,14 @@ end
 
 function Combat.isDone() return Combat.combatDone end
 function Combat.isDead() return Combat.playerDead end
-function Combat.reset() Combat.start() end
+function Combat.reset()
+    Combat.player        = nil
+    Combat.enemies       = {}
+    Combat.projectiles   = {}
+    Combat.orbs          = {}
+    Combat.currentWave   = 0
+    Combat.playerDead    = false
+    Combat.combatDone    = false
+end
 
 return Combat

@@ -7,6 +7,7 @@ local debate   = require("debate")
 local util     = require("util")
 local settings = require("settings")
 local Fade     = require("effects.fade")
+local States   = require("states") -- new
 
 -- debug-based script path setup
 local scriptPath = debug.getinfo(1).source:match("@?(.*/)") or "./"
@@ -16,7 +17,7 @@ package.path = package.path .. ";"
              .. scriptPath .. "effects/?.lua;"
 
 -- state tracking
-local currentState  = "intro"
+local currentState  = States.INTRO
 local previousState
 
 function love.load()
@@ -29,59 +30,59 @@ function love.update(dt)
     Fade.update(dt)
     if Fade.state ~= "none" then return end
 
-    if currentState == "combat" then
+    if currentState == States.COMBAT then
         combat.update(dt)
         if combat.isDead() then
             Fade.start("death", function()
-                currentState = "death"
+                currentState = States.DEATH
             end)
         elseif combat.isDone() then
             Fade.start("mid", function()
-                currentState = "mid"
+                currentState = States.MID
                 dialogue.start(dialogue.midLines)
             end)
         end
 
-    elseif currentState == "debate" then
+    elseif currentState == States.DEBATE then
         debate.update(dt)
 
-    elseif currentState == "intro" or currentState == "mid" then
+    elseif currentState == States.INTRO or currentState == States.MID then
         dialogue.update(dt)
 
-    elseif currentState == "instructions" then
+    elseif currentState == States.INSTRUCTIONS then
         -- no update logic for static screen
     end
 end
 
 function love.draw()
-    if currentState == "intro" or currentState == "mid" then
+    if currentState == States.INTRO or currentState == States.MID then
         dialogue.draw()
 
-    elseif currentState == "instructions" then
+    elseif currentState == States.INSTRUCTIONS then
         love.graphics.setFont(assets.dialogueFont)
         local w, h = love.graphics.getDimensions()
         love.graphics.printf("INSTRUCTIONS:\n\n- Move: W A S D\n- Dodge: Left Shift\n- Melee Attack: Left Click\n- Ranged Attack: Right Click\n- Teleport: Space (then click)\n\nPress SPACE to begin combat.",
             0, h * 0.2, w, "center")
 
-    elseif currentState == "combat" then
+    elseif currentState == States.COMBAT then
         combat.draw()
 
-    elseif currentState == "debate" then
+    elseif currentState == States.DEBATE then
         debate.draw()
 
-    elseif currentState == "death" then
+    elseif currentState == States.DEATH then
         love.graphics.setFont(assets.bigFont)
         love.graphics.printf("YOU DIED",
             0, love.graphics.getHeight()/2,
             love.graphics.getWidth(), "center")
 
-    elseif currentState == "victory" then
+    elseif currentState == States.VICTORY then
         love.graphics.setFont(assets.bigFont)
         love.graphics.printf("VICTORY!",
             0, love.graphics.getHeight()/2,
             love.graphics.getWidth(), "center")
 
-    elseif currentState == "settings" then
+    elseif currentState == States.SETTINGS then
         settings.draw()
     end
 
@@ -93,14 +94,14 @@ end
 function love.keypressed(key)
     -- toggle settings
     if key == "escape" then
-        if currentState == "settings" then
-            Fade.start(previousState or "intro", function()
-                currentState = previousState or "intro"
+        if currentState == States.SETTINGS then
+            Fade.start(previousState or States.INTRO, function()
+                currentState = previousState or States.INTRO
             end)
         else
             previousState = currentState
-            Fade.start("settings", function()
-                currentState = "settings"
+            Fade.start(States.SETTINGS, function()
+                currentState = States.SETTINGS
             end)
         end
         return
@@ -108,23 +109,23 @@ function love.keypressed(key)
 
     if Fade.state ~= "none" then return end
 
-    if currentState == "settings" then
+    if currentState == States.SETTINGS then
         settings.keypressed(key)
         return
     end
 
     -- Dialogue input
-    if currentState == "intro" or currentState == "mid" then
+    if currentState == States.INTRO or currentState == States.MID then
         if key == "space" then
             local done = dialogue.nextLine()
             if done then
-                if currentState == "intro" then
-                    Fade.start("instructions", function()
-                        currentState = "instructions"
+                if currentState == States.INTRO then
+                    Fade.start(States.INSTRUCTIONS, function()
+                        currentState = States.INSTRUCTIONS
                     end)
                 else
-                    Fade.start("debate", function()
-                        currentState = "debate"
+                    Fade.start(States.DEBATE, function()
+                        currentState = States.DEBATE
                         debate.start()
                     end)
                 end
@@ -132,40 +133,44 @@ function love.keypressed(key)
         end
 
     -- Instructions input
-    elseif currentState == "instructions" then
+    elseif currentState == States.INSTRUCTIONS then
         if key == "space" then
-            Fade.start("combat", function()
-                currentState = "combat"
+            Fade.start(States.COMBAT, function()
+                currentState = States.COMBAT
                 combat.start()
             end)
         end
 
     -- Combat input
-    elseif currentState == "combat" then
+    elseif currentState == States.COMBAT then
         combat.keypressed(key)
 
     -- Debate input
-    elseif currentState == "debate" then
+    elseif currentState == States.DEBATE then
         if key == "space" then
-            Fade.start("victory", function()
-                currentState = "victory"
+            Fade.start(States.VICTORY, function()
+                currentState = States.VICTORY
             end)
         end
 
     -- Death or Victory reset
-    elseif currentState == "death" or currentState == "victory" then
+    elseif currentState == States.DEATH or currentState == States.VICTORY then
         if key == "space" then
-            Fade.start("intro", function()
+            Fade.start(States.INTRO, function()
+                -- stop music so it doesn't leak into intro
+                if assets.music.combatTheme:isPlaying() then
+                    assets.music.combatTheme:stop()
+                end
                 combat.reset()
                 dialogue.start(dialogue.introLines)
-                currentState = "intro"
+                currentState = States.INTRO
             end)
         end
     end
 end
 
 function love.mousepressed(x, y, button)
-    if currentState == "combat" and Fade.state == "none" then
+    if currentState == States.COMBAT and Fade.state == "none" then
         combat.mousepressed(x, y, button)
     end
 end
