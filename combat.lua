@@ -6,6 +6,7 @@ local Enemy         = require("entities.Enemy")
 local TakeDamage    = require("effects.takeDamage")
 local BaseMeleeUnit = require("entities.BaseMeleeUnit")
 local RangedUnit    = require("entities.RangedUnit")
+local Orb           = require("effects.Orb")
 
 local Combat = {}
 
@@ -31,16 +32,17 @@ local function playSound(src)
 end
 
 function Combat.start()
-    Combat.player        = Player.new()
-    Combat.enemies       = {}
-    Combat.projectiles   = {}
-    BaseMeleeUnit.slashes = {}
-    RangedUnit.beams      = {}
-    Combat.currentWave   = 0
-    Combat.playerDead    = false
-    Combat.combatDone    = false
-    message              = ""
-    messageTimer         = 0
+    Combat.player           = Player.new()
+    Combat.enemies          = {}
+    Combat.projectiles      = {}
+    Combat.orbs             = {}
+    BaseMeleeUnit.slashes   = {}
+    RangedUnit.beams        = {}
+    Combat.currentWave      = 0
+    Combat.playerDead       = false
+    Combat.combatDone       = false
+    message                 = ""
+    messageTimer            = 0
 
     Combat.spawnWave()
     assets.music.combatTheme:setVolume(0.3)
@@ -72,6 +74,16 @@ function Combat.spawnWave()
     end
 end
 
+function Combat.killPlayer()
+    if Combat.player and Combat.player.alive then
+        Combat.player.alive  = false
+        Combat.playerDead    = true
+        message              = "You died!"
+        messageTimer         = MESSAGE_DURATION
+        assets.music.combatTheme:stop()
+    end
+end
+
 function Combat.update(dt)
     if Combat.playerDead or Combat.combatDone then return end
     local w,h = love.graphics.getDimensions()
@@ -100,11 +112,7 @@ function Combat.update(dt)
                     TakeDamage.start()
                     playSound(assets.sfx.playerHit)
                     if Combat.player.health <= 0 then
-                        Combat.player.alive  = false
-                        Combat.playerDead     = true
-                        message               = "You died!"
-                        messageTimer          = MESSAGE_DURATION
-                        assets.music.combatTheme:stop()
+                        Combat.killPlayer()
                     end
                 end
             elseif not s.isEnemy then
@@ -115,7 +123,14 @@ function Combat.update(dt)
                         if dist < s.width/2 + e2.width/2 then
                             e2:take_damage(s.damage)
                             playSound(assets.sfx.enemyHit)
-                            if not e2.alive then playSound(assets.sfx.enemyDeath) end
+
+                            -- DROP HEALTH ORB CHANCE
+                            if not e2.alive then
+                                playSound(assets.sfx.enemyDeath)
+                                if math.random() < 0.05 then -- 5% drop chance
+                                    table.insert(Combat.orbs, Orb.new(e2.x + e2.width / 2, e2.y + e2.height / 2))
+                                end
+                            end
                         end
                     end
                 end
@@ -152,11 +167,7 @@ function Combat.update(dt)
                 TakeDamage.start()
                 playSound(assets.sfx.playerHit)
                 if Combat.player.health <= 0 then
-                    Combat.player.alive  = false
-                    Combat.playerDead     = true
-                    message               = "You died!"
-                    messageTimer          = MESSAGE_DURATION
-                    assets.music.combatTheme:stop()
+                    Combat.killPlayer()
                 end
             end
         end
@@ -211,6 +222,11 @@ function Combat.update(dt)
         messageTimer = messageTimer - dt
         if messageTimer <= 0 then message = "" end
     end
+
+    for _, orb in ipairs(Combat.orbs) do
+        orb:update(dt)
+        orb:checkCollected(Combat.player)
+    end
 end
 
 function Combat.draw()
@@ -257,6 +273,13 @@ function Combat.draw()
         love.graphics.setLineWidth(beam.width * 0.4)
         love.graphics.line(beam.x, beam.y, endX, endY)
         love.graphics.setLineWidth(1)
+    end
+
+    -- draw orbs
+    for _, orb in ipairs(Combat.orbs) do
+        if not orb.collected then
+            orb:draw()
+        end
     end
 
     -- HUD: HP and Wave
