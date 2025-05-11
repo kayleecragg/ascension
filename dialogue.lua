@@ -3,19 +3,21 @@ local util   = require("util")
 local Dialogue = {}
 
 Dialogue.introLines = {
+    { name = "Hua Cheng", text = "The higher they are, the harder they fall.", portrait = assets.huaChengPortrait},
+    { name = "Hua Cheng", text = "...It's time, E'Ming.", portrait = assets.huaChengPortrait},
     { name = "Heavenly Official", text = "Who dare trespass into the Heavenly Palace!", portrait = assets.mysteryman},
-    { name = "HUACHENG", text = "I challenge you.", portrait = assets.huaChengPortrait },
+    { name = "Hua Cheng", text = "I challenge you.", portrait = assets.huaChengPortrait },
     { name = "Heavenly Official", text = "HOW DARE YOU!?!!", portrait = assets.mysteryman },
-    { name = "HUACHENG", text = "If you win, I will give you my ashes to scatter.", portrait = assets.huaChengPortrait },
-    { name = "HUACHENG", text = "But if I win...", portrait = assets.huaChengPortrait },
-    { name = "HUACHENG", text = "Step down from your posts in Heaven.", portrait = assets.huaChengPortrait },
+    { name = "Hua Cheng", text = "If you win, I will give you my ashes to scatter.", portrait = assets.huaChengPortrait },
+    { name = "Hua Cheng", text = "But if I win...", portrait = assets.huaChengPortrait },
+    { name = "Hua Cheng", text = "Step down from your posts in Heaven.", portrait = assets.huaChengPortrait },
     { name = "Heavenly Official", text = "Hah! Alright then little shrimp. You won't last a second.", portrait = assets.mysteryman },
 }
 
 Dialogue.midLines = {
     { name = " ", text = "The Martial Gods had been utterly defeated. It was now the Literature Gods' turn.", portrait = nil },
     { name = " ", text = "If they couldn't beat him in a fight, then they should at least be able beat him in debating, right?", portrait = nil },
-    { name = "HUACHENG", text = "Well fought… Prepare for the debate.", portrait = assets.huaChengPortrait },
+    { name = "Hua Cheng", text = "Well fought… Prepare for the debate.", portrait = assets.huaChengPortrait },
     { name = "", text = "The Literature Gods await!", portrait = nil },
 }
 

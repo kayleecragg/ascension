@@ -450,6 +450,26 @@ end
 
 function Combat.isDone() return Combat.combatDone end
 function Combat.isDead() return Combat.playerDead end
-function Combat.reset() Combat.start() end
+-- function Combat.reset() Combat.start() end
+
+function Combat.reset()
+    Combat.player        = {}
+    Combat.enemies       = {}
+    Combat.projectiles   = {}
+    BaseMeleeUnit.slashes = {}
+    RangedUnit.beams     = {}
+    Combat.currentWave   = 0
+    Combat.playerDead    = false
+    Combat.combatDone    = false
+    Combat.teleportAiming = false
+    Combat.dodging        = false
+    Combat.dodgeTime      = 0
+    message               = ""
+    messageTimer          = 0
+
+    if assets.music.combatTheme then
+        assets.music.combatTheme:stop()
+    end
+end
 
 return Combat
