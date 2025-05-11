@@ -8,69 +8,88 @@ Enemy.baseStats = {
     -- Dimensions
     width = 50,
     height = 50,
-    
+
     -- Health
     baseHealth = 5,
     healthPerWave = 4,
-    
+
     -- Movement
     baseSpeed = 60,
     speedPerWave = 15,
     baseMaxSpeed = 100,
     maxSpeedPerWave = 15,
-    
+
     -- Combat
     baseAttackDamage = 1,
     baseAttackRange = 50,
     baseAttackCD = 1.5,
 }
 
--- Type-specific multipliers
+-- Type-specific default multipliers
 Enemy.typeMultipliers = {
     base = {
-        health = 1.0,
-        speed = 1.0,
-        attackDamage = 1.0,
-        attackRange = 1.0,
-        attackCD = 1.0,
-        width = 1.0,
-        height = 1.0,
+        health = 1, speed = 1.0, attackDamage = 1.0,
+        attackRange = 1.0, attackCD = 1.0,
+        width = 1.0, height = 1.0,
     },
     charge = {
-        health = 0.6,     -- Weaker but faster
-        speed = 1.25,
-        attackDamage = 1.0,
-        attackRange = 1.0,
-        attackCD = 1.33,  -- Slower attack (2 seconds vs 1.5)
-        width = 1.1,      -- Slightly bigger
-        height = 1.1,
+        health = 0.9, speed = 1.5, attackDamage = 1.0,
+        attackRange = 1.0, attackCD = 1.33,
+        width = 1.1, height = 1.1,
     },
     ranged = {
-        health = 0.4,     -- Fragile but dangerous
-        speed = 0.75,     -- Slower
-        attackDamage = 1.0,
-        attackRange = 1.2, -- Longer range
-        attackCD = 1.33,   -- Matches beamCD of 2 seconds
-        width = 0.9,       -- Slightly smaller
-        height = 0.9,
+        health = 0.6, speed = 0.75, attackDamage = 1.0,
+        attackRange = 1.2, attackCD = 1.33,
+        width = 0.9, height = 0.9,
     }
 }
 
--- Spawn rate configuration - moved from combat.lua
+-- Spawn rate configuration
 Enemy.spawnRates = {
-    -- Wave configuration - number of enemies per wave
     waves = {2, 5, 7, 8, 9, 10},
-    
-    -- Enemy type probability distribution (out of 10):
-    -- Values represent the upper bound of the range for each type
     typeChances = {
-        base = 4,    -- 1-4 (40% chance)
-        charge = 7,  -- 5-7 (30% chance)
-        ranged = 10  -- 8-10 (30% chance)
+        base = 5,     -- 1-5
+        charge = 8,   -- 6-8
+        ranged = 10,  -- 9-10
     }
 }
 
--- Helper function to get an enemy type based on probability
+-- per-wave, per-unit multipliers
+Enemy.customMultipliers = {
+    [1] = {
+        base =   { health = 1.0, speed = 1.0, attackDamage = 1.0 },
+        charge = { health = 1.0, speed = 1.0, attackDamage = 1.0 },
+        ranged = { health = 1.0, speed = 1.0, attackDamage = 1.0 },
+    },
+    [2] = {
+        base =   { health = 1.2, speed = 1.1, attackDamage = 1.1 },
+        charge = { health = 1.2, speed = 1.1, attackDamage = 1.1 },
+        ranged = { health = 1.2, speed = 1.1, attackDamage = 1.1 },
+    },
+    [3] = {
+        base =   { health = 1.4, speed = 1.2, attackDamage = 1.2 },
+        charge = { health = 1.5, speed = 1.5, attackDamage = 1.5 },
+        ranged = { health = 1.3, speed = 1.2, attackDamage = 1.3 },
+    },
+    [4] = {
+        base =   { health = 1.6, speed = 1.3, attackDamage = 1.3 },
+        charge = { health = 1.7, speed = 1.6, attackDamage = 1.6 },
+        ranged = { health = 1.5, speed = 1.4, attackDamage = 1.5 },
+    },
+    [5] = {
+        base =   { health = 1.8, speed = 1.4, attackDamage = 1.4 },
+        charge = { health = 2.0, speed = 2.0, attackDamage = 2.0 },
+        ranged = { health = 1.7, speed = 1.5, attackDamage = 1.6 },
+    },
+    [6] = {
+        base =   { health = 2.0, speed = 1.5, attackDamage = 1.5 },
+        charge = { health = 2.5, speed = 2.2, attackDamage = 2.2 },
+        ranged = { health = 2.0, speed = 1.7, attackDamage = 2.0 },
+    },
+}
+
+
+-- Helper to get an enemy type based on probability
 function Enemy.getRandomType()
     local roll = math.random(1, 10)
     if roll <= Enemy.spawnRates.typeChances.base then
@@ -82,61 +101,95 @@ function Enemy.getRandomType()
     end
 end
 
--- Utility function to get enemy type color - moved up before it's needed
+-- Helper to get color for an enemy type
 function Enemy.getTypeColor(enemyType)
     if enemyType == "base" then
-        return {1, 1, 0}      -- Yellow
+        return {1, 1, 0}
     elseif enemyType == "charge" then
-        return {1, 0, 0}      -- Red
+        return {1, 0, 0}
     elseif enemyType == "ranged" then
-        return {0.2, 0.4, 0.8} -- Blue
+        return {0.2, 0.4, 0.8}
     else
-        return {1, 1, 1}      -- White fallback
+        return {1, 1, 1}
     end
 end
 
--- Calculate stats based on type and wave
-function Enemy.calculateStats(enemyType, wave)
+-- Get custom multiplier for a specific unit if defined
+function Enemy.getCustomMultiplier(wave, enemyType, indexInWave)
+    local waveData = Enemy.customMultipliers[wave]
+    if waveData and waveData[enemyType] then
+        return waveData[enemyType][indexInWave]
+    end
+    return nil
+end
+
+-- Calculate stats from base and multipliers
+-- just type multiplier, purposely commented out, but left in in case we wanna revert back to this
+
+-- function Enemy.calculateStats(enemyType, wave, customMult)
+--     local stats = {}
+--     local base = Enemy.baseStats
+--     local mult = customMult or Enemy.typeMultipliers[enemyType]
+--     local w = wave or 1
+
+--     stats.width     = base.width * mult.width
+--     stats.height    = base.height * mult.height
+--     stats.health    = (base.baseHealth + w * base.healthPerWave) * mult.health
+--     stats.maxHealth = stats.health
+--     stats.speed     = (base.baseSpeed + w * base.speedPerWave) * mult.speed
+--     stats.maxSpeed  = (base.baseMaxSpeed + w * base.maxSpeedPerWave) * mult.speed
+--     stats.attackDamage = base.baseAttackDamage * mult.attackDamage
+--     stats.attackRange  = base.baseAttackRange * mult.attackRange
+--     stats.attackCD     = base.baseAttackCD * mult.attackCD
+--     stats.attackTimer  = 0
+--     stats.alive        = true
+--     stats.color        = Enemy.getTypeColor(enemyType)
+
+--     return stats
+-- end
+
+-- Calculate stats from base and multipliers
+-- Combined version, base type multiplier * wave multiplier
+
+function Enemy.calculateStats(enemyType, wave, customMult)
     local stats = {}
-    local mult = Enemy.typeMultipliers[enemyType]
+    local base = Enemy.baseStats
+    local typeMult = Enemy.typeMultipliers[enemyType]
+    local waveMult = customMult or {}
+
+    -- Combine: default * wave override (if present)
+    local function getStat(key)
+        return typeMult[key] * (waveMult[key] or 1)
+    end
+
     local w = wave or 1
-    
-    -- Apply base dimensions with type multipliers
-    stats.width = Enemy.baseStats.width * mult.width
-    stats.height = Enemy.baseStats.height * mult.height
-    
-    -- Apply health scaling
-    stats.health = (Enemy.baseStats.baseHealth + w * Enemy.baseStats.healthPerWave) * mult.health
+    stats.width     = base.width     * getStat("width")
+    stats.height    = base.height    * getStat("height")
+    stats.health    = (base.baseHealth + w * base.healthPerWave) * getStat("health")
     stats.maxHealth = stats.health
-    
-    -- Apply speed scaling
-    stats.speed = (Enemy.baseStats.baseSpeed + w * Enemy.baseStats.speedPerWave) * mult.speed
-    stats.maxSpeed = (Enemy.baseStats.baseMaxSpeed + w * Enemy.baseStats.maxSpeedPerWave) * mult.speed
-    
-    -- Apply combat stats
-    stats.attackDamage = Enemy.baseStats.baseAttackDamage * mult.attackDamage
-    stats.attackRange = Enemy.baseStats.baseAttackRange * mult.attackRange
-    stats.attackCD = Enemy.baseStats.baseAttackCD * mult.attackCD
-    stats.attackTimer = 0
-    stats.alive = true
-    
-    -- Set color here directly
-    stats.color = Enemy.getTypeColor(enemyType)
-    
+    stats.speed     = (base.baseSpeed + w * base.speedPerWave) * getStat("speed")
+    stats.maxSpeed  = (base.baseMaxSpeed + w * base.maxSpeedPerWave) * getStat("speed")
+    stats.attackDamage = base.baseAttackDamage * getStat("attackDamage")
+    stats.attackRange  = base.baseAttackRange  * getStat("attackRange")
+    stats.attackCD     = base.baseAttackCD     * getStat("attackCD")
+    stats.attackTimer  = 0
+    stats.alive        = true
+    stats.color        = Enemy.getTypeColor(enemyType)
+
     return stats
 end
 
--- Factory function to create enemies
-function Enemy.new(enemyType, wave)
+
+-- Factory function to create enemy instance
+function Enemy.new(enemyType, wave, indexInWave)
     local x = math.random(100, 700)
     local y = math.random(100, 500)
-    
-    -- Calculate stats first
-    local stats = Enemy.calculateStats(enemyType, wave)
+
+    local customMult = Enemy.getCustomMultiplier(wave, enemyType, indexInWave)
+    local stats = Enemy.calculateStats(enemyType, wave, customMult)
     stats.x = x
     stats.y = y
-    
-    -- Import unit types at function call time to avoid circular dependency
+
     if enemyType == "base" then
         local BaseMeleeUnit = require("entities.BaseMeleeUnit")
         return BaseMeleeUnit.new(stats)
