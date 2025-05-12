@@ -3,6 +3,14 @@
 *A 2D narrative-driven roguelike based on the novel Tian Guan Ci Fu.*  
 Built with [Love2D](https://love2d.org/) (Lua).
 
+Both mac and windows exe available now
+
+**Mac exe:** [https://github.com/kayleecragg/ascension/releases/download/beta/Ascension_osx.zip](https://github.com/kayleecragg/ascension/releases/download/beta/Ascension_osx.zip)
+
+**Windows exe:** [https://github.com/kayleecragg/ascension/releases/download/beta/Ascension_32.zip](https://github.com/kayleecragg/ascension/releases/download/beta/Ascension_32.zip)
+
+For windows just unzip and double click on Ascension.exe :)
+
 [![Ascension Gameplay Walkthrough](resources/images/youtube.png)](https://youtu.be/FHOgZQkW0RY)
 
 ![Gameplay Screenshot 1](resources/images/ascension2.png)
