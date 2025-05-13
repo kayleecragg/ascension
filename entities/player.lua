@@ -194,10 +194,15 @@ function Player:draw()
     love.graphics.setColor(0,1,0)
     love.graphics.rectangle("fill", self.x, self.y-8, self.width*pct, 5)
     -- ability boxes
-    local bs,by = 48, h - 48 - PADDING
-    drawAbilityBox(PADDING,                by, bs, self.teleportTimer, self.teleportCD, "SPACE")
-    drawAbilityBox(PADDING+bs+PADDING,     by, bs, self.rangedTimer,   self.rangedCD,   "RMB")
-    drawAbilityBox(PADDING+2*(bs+PADDING), by, bs, self.dodgeTimer,    self.dodgeCD,    "LSHIFT")
+    local bs = 48
+    local gap = 20
+    local totalWidth = 3 * bs + 2 * gap
+    local startX = (w - totalWidth) / 2
+    local by = 10  -- distance from top
+
+    drawAbilityBox(startX,                 by, bs, self.teleportTimer, self.teleportCD, "SPACE")
+    drawAbilityBox(startX + bs + gap,     by, bs, self.rangedTimer,   self.rangedCD,   "RMB")
+    drawAbilityBox(startX + 2*(bs + gap), by, bs, self.dodgeTimer,    self.dodgeCD,    "LSHIFT")
     -- teleport range
     if self.teleportAiming then
         local cx,cy = self.x+self.width/2, self.y+self.height/2
