@@ -234,10 +234,7 @@ end
 function Combat.draw()
     local w,h = love.graphics.getDimensions()
 
-    -- draw player
-    Combat.player:draw()
-
-    -- draw enemies & health bars
+    -- draw enemies & health bars first
     for _, e in ipairs(Combat.enemies) do
         if e.alive then
             e:draw()
@@ -248,6 +245,12 @@ function Combat.draw()
             love.graphics.rectangle("fill", e.x, e.y-8, e.width * pct, 5)
         end
     end
+
+    -- draw player
+    if Combat.player and Combat.player.draw then
+        Combat.player:draw(true)
+    end
+
 
     -- draw slashes
     for _, s in ipairs(BaseMeleeUnit.slashes) do s:draw() end
