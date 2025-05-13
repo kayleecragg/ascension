@@ -290,7 +290,9 @@ function Combat.draw()
     love.graphics.print("Wave: " .. Combat.currentWave .. "/" .. #Enemy.spawnRates.waves, PADDING, 30)
 
     -- draw damage flash
-    TakeDamage.draw(w, h)
+    if Combat.player and Combat.player.alive and not Combat.playerDead then
+        TakeDamage.draw(w, h)
+    end
 
     -- draw messages
     if message ~= "" then

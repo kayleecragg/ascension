@@ -15,7 +15,7 @@ function TakeDamage.update(dt)
 end
 
 function TakeDamage.draw(w, h)
-    if flashTimer > 0 then
+    if flashTimer > 0 and flashTimer < FLASH_DURATION then
         local alpha = (flashTimer / FLASH_DURATION) * 0.5
         love.graphics.setColor(1, 0, 0, alpha)
         love.graphics.rectangle("fill", 0, 0, w, h)
