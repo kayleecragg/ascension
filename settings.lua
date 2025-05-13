@@ -11,8 +11,10 @@ local Settings = {
 -- Apply volumes
 function Settings.apply()
     love.audio.setVolume(Settings.masterVolume)
-    if assets.music and assets.music.combatTheme then
-        assets.music.combatTheme:setVolume(Settings.masterVolume * Settings.musicVolume)
+    if assets.music then
+        for _, track in pairs(assets.music) do
+            track:setVolume(Settings.masterVolume * Settings.musicVolume)
+        end
     end
 end
 

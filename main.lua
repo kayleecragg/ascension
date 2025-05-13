@@ -38,6 +38,7 @@ local function playMusicForState(state)
     elseif state == States.DEATH then
         assets.music.deathTheme:play()
     end
+    settings.apply()
 end
 
 
