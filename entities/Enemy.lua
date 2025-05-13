@@ -175,6 +175,8 @@ function Enemy.calculateStats(enemyType, wave, customMult)
     stats.attackTimer  = 0
     stats.alive        = true
     stats.color        = Enemy.getTypeColor(enemyType)
+    stats.enemyType     = enemyType
+
 
     return stats
 end
@@ -201,5 +203,19 @@ function Enemy.new(enemyType, wave, indexInWave)
         return RangedUnit.new(stats)
     end
 end
+
+--- Returns the drop chance for an enemy instance
+function Enemy.getDropChance(enemy)
+    if not enemy or not enemy.enemyType then
+        return 0.1
+    end
+
+    if enemy.enemyType == "charge" then
+        return 0.30
+    else
+        return 0.1
+    end
+end
+
 
 return Enemy

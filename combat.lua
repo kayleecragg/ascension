@@ -128,7 +128,8 @@ function Combat.update(dt)
                             -- DROP HEALTH ORB CHANCE
                             if not e2.alive then
                                 playSound(assets.sfx.enemyDeath)
-                                if math.random() < 0.05 then -- 5% drop chance
+                                local dropChance = Enemy.getDropChance(e2)
+                                if math.random() < dropChance then
                                     table.insert(Combat.orbs, Orb.new(e2.x + e2.width / 2, e2.y + e2.height / 2))
                                 end
                             end
