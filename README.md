@@ -5,17 +5,17 @@ Built with [Love2D](https://love2d.org/) (Lua).
 
 Both mac and windows exe available now
 
-**Mac exe:** [https://github.com/kayleecragg/ascension/releases/download/beta/Ascension_osx.zip](https://github.com/kayleecragg/ascension/releases/download/beta/Ascension_osx.zip)
+**Windows exe:** [https://github.com/kayleecragg/ascension/releases/download/v0.0.1/Ascension_32.zip](https://github.com/kayleecragg/ascension/releases/download/v0.0.1/Ascension_32.zip)
 
-**Windows exe:** [https://github.com/kayleecragg/ascension/releases/download/beta/Ascension_32.zip](https://github.com/kayleecragg/ascension/releases/download/beta/Ascension_32.zip)
+**Mac exe: (on beta version)** [https://github.com/kayleecragg/ascension/releases/download/beta/Ascension_osx.zip](https://github.com/kayleecragg/ascension/releases/download/beta/Ascension_osx.zip)
 
-For windows just unzip and double click on Ascension.exe :)
+For windows just unzip and double click on RUNTHIS.exe. 
+I swear it's not a virus I just made an auto updater. 
 
 [![Ascension Gameplay Walkthrough](resources/images/youtube.png)](https://youtu.be/FHOgZQkW0RY)
 
 ![Gameplay Screenshot 1](resources/images/ascension2.png)
 ![Gameplay Screenshot 3](resources/images/ascension3.png)
-
 
 
 ---
